@@ -3,6 +3,7 @@ import { Lato, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "../components/general/ThemeProvider"
 import { SessionProvider } from "@/components/providers/SessionProviders";
+import { ThemeToggle } from "@/components/general/ThemeToggle";
 
 
 const lato = Lato({
@@ -30,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             attribute="class"
             defaultTheme="system"
             enableSystem
-            disableTransitionOnChange
+            disableTransitionOnChange 
           >
             {children}
           </ThemeProvider>

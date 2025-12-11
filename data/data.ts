@@ -1,4 +1,3 @@
-// data/data.ts
 
 // FAQ Data
 export const faqs = [
@@ -50,9 +49,9 @@ export const featuredCars = [
     color: "Pearl White",
     wishListed: true,
     images: [
-      "/images/cars/landcruiser-1.jpg",
-      "/images/cars/landcruiser-2.jpg",
-      "/images/cars/landcruiser-3.jpg"
+      "/hero-1.png",
+      "/hero-2.png",
+      "/hero-3.png"
     ],
     features: ["4WD", "Leather Seats", "Sunroof", "Navigation", "Heated Seats"],
     location: "Nairobi",
@@ -73,8 +72,8 @@ export const featuredCars = [
     color: "Obsidian Black",
     wishListed: false,
     images: [
-      "/images/cars/mercedes-c200-1.jpg",
-      "/images/cars/mercedes-c200-2.jpg"
+      "/hero_4.png",
+      "/gtr.png"
     ],
     features: ["Premium Package", "Panoramic Roof", "Burmester Sound", "LED Headlights"],
     location: "Mombasa",
@@ -95,10 +94,10 @@ export const featuredCars = [
     color: "Titanium Gray",
     wishListed: true,
     images: [
-      "/images/cars/pajero-1.jpg",
-      "/images/cars/pajero-2.jpg",
-      "/images/cars/pajero-3.jpg",
-      "/images/cars/pajero-4.jpg"
+      "/pajero-1.png",
+      "/pajero-2.png",
+      "/pajero-3.png",
+      "/pajero-4.png"
     ],
     features: ["7 Seater", "Off-road Mode", "Rear AC", "Tow Package"],
     location: "Kampala",
@@ -119,8 +118,8 @@ export const featuredCars = [
     color: "Marine Blue",
     wishListed: false,
     images: [
-      "/images/cars/forester-1.jpg",
-      "/images/cars/forester-2.jpg"
+      "/forester-1.png",
+      "/forester-2.png"
     ],
     features: ["Symmetrical AWD", "Eyesight Safety", "Apple CarPlay", "Roof Rails"],
     location: "Dar es Salaam",
@@ -141,9 +140,9 @@ export const featuredCars = [
     color: "Tornado Red",
     wishListed: true,
     images: [
-      "/images/cars/golf-gti-1.jpg",
-      "/images/cars/golf-gti-2.jpg",
-      "/images/cars/golf-gti-3.jpg"
+      "/golf-gti-1.png",
+      "/golf-gti-2.png",
+      "/golf-gti-3.png"
     ],
     features: ["Sport Suspension", "Paddle Shifters", "Premium Audio", "LED DRLs"],
     location: "Nairobi",
@@ -164,8 +163,8 @@ export const featuredCars = [
     color: "Silver Metallic",
     wishListed: false,
     images: [
-      "/images/cars/dmax-1.jpg",
-      "/images/cars/dmax-2.jpg"
+      "/dmax-1.png",
+      "/dmax-2.png"
     ],
     features: ["4x4", "Double Cab", "Canopy", "Reverse Camera", "Bluetooth"],
     location: "Arusha",
@@ -186,10 +185,10 @@ export const featuredCars = [
     color: "Santorini Black",
     wishListed: true,
     images: [
-      "/images/cars/rangerover-1.jpg",
-      "/images/cars/rangerover-2.jpg",
-      "/images/cars/rangerover-3.jpg",
-      "/images/cars/rangerover-4.jpg"
+      "/rangerover-1.png",
+      "/rangerover-2.png",
+      "/rangerover-3.png",
+      "/rangerover-4.png"
     ],
     features: ["Terrain Response", "Meridian Sound", "Massage Seats", "HUD Display"],
     location: "Nairobi",
@@ -210,8 +209,8 @@ export const featuredCars = [
     color: "Championship White",
     wishListed: false,
     images: [
-      "/images/cars/civic-typeR-1.jpg",
-      "/images/cars/civic-typeR-2.jpg"
+      "/civic-typeR-1.png",
+      "/civic-typeR-2.png"
     ],
     features: ["Sport Mode", "Recaro Seats", "Brembo Brakes", "Triple Exhaust"],
     location: "Mombasa",
@@ -220,11 +219,60 @@ export const featuredCars = [
   }
 ];
 
-// Car Brands for Filters
+
 export const carBrands = [
-  "Toyota", "Mercedes-Benz", "Mitsubishi", "Subaru", "Volkswagen", 
-  "Isuzu", "Land Rover", "Honda", "Ford", "Nissan", "BMW", "Audi"
+  {
+    brand: "Toyota",
+    image: "/toyota-7.svg" 
+  },
+  {
+    brand: "Mercedes-Benz",
+    image: "/mercedes.svg"
+  },
+  {
+    brand: "Mitsubishi",
+    image: "/mitsubishi.svg"
+  },
+  {
+    brand: "Subaru",
+    image: "/subaru-1.svg"
+  },
+  {
+    brand: "Volkswagen",
+    image: "/volkswagen.svg"
+  },
+  {
+    brand: "Isuzu",
+    image: "/isuzu.svg"
+  },
+  {
+    brand: "Land Rover",
+    image: "/https://worldvectorlogo.com/downloaded/volkswagen-10.svg"
+  },
+  {
+    brand: "Honda",
+    image: "/honda.svg"
+  },
+  {
+    brand: "Ford",
+    image: "/ford.svg"
+  },
+  {
+    brand: "Nissan",
+    image: "/nissan.svg"
+  },
+  {
+    brand: "BMW",
+    image: "/bmw.svg"
+  },
+  {
+    brand: "Audi",
+    image: "/audi.svg"
+  }
 ];
+
+//  original array for filters if needed
+export const carBrandsList = carBrands.map(b => b.brand);
 
 // Fuel Types for Filters
 export const fuelTypes = ["Petrol", "Diesel", "Hybrid", "Electric", "LPG"];
@@ -233,8 +281,37 @@ export const fuelTypes = ["Petrol", "Diesel", "Hybrid", "Electric", "LPG"];
 export const transmissionTypes = ["Automatic", "Manual", "Semi-Auto", "CVT"];
 
 // Body Types for Filters
-export const bodyTypes = ["Sedan", "SUV", "Hatchback", "Pickup Truck", "Coupe", "Convertible", "Minivan", "Wagon"];
 
+export const bodyTypes = [
+  {
+    name: "SUV",
+    image: "/gtr.png",
+  },
+  {
+    name: "Sedan",
+    image: "/gtr.png",
+  },
+  {
+    name: "Hatchback",
+    image: "/gtr.png",
+  },
+  {
+    name: "Pickup Truck",
+    image: "/gtr.png",
+  },
+  {
+    name: "Luxury SUV",
+    image: "/gtr.png",
+  },
+  {
+    name: "Coupe",
+    image: "/gtr.png",
+  },
+  {
+    name: "Minivan",
+    image: "/gtr.png",
+  },
+];
 // Price Ranges (in KSH)
 export const priceRanges = [
   { label: "Under 1M", min: 0, max: 1000000 },
@@ -291,3 +368,4 @@ export const testimonials = [
     date: "2024-03-05"
   }
 ];
+

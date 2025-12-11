@@ -36,7 +36,7 @@ export function Navbar() {
     }
 
     return (
-        <nav className='flex justify-between items-center py-4'>
+        <nav className='flex justify-between items-center padded py-4'>
             <Link href='/' className="flex items-center gap-2">
                 <Image
                     src="/logo.png"

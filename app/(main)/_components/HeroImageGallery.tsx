@@ -1,6 +1,9 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Skeleton } from '@/components/ui/skeleton' // Make sure to import your Skeleton
+import { Car } from 'lucide-react' // Add car icon
 
 interface HeroImageGalleryProps {
   intervalMinutes?: number 
@@ -14,9 +17,8 @@ const carImages = [
   '/gtr.png',
 ]
 
-export default function HeroImageGallery({ intervalMinutes = 3 }: HeroImageGalleryProps) {
+export default function HeroImageGallery({ intervalMinutes = 0.75 }: HeroImageGalleryProps) { // 0.75 minutes = 45 seconds
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [opacity, setOpacity] = useState(1)
   const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
@@ -26,27 +28,44 @@ export default function HeroImageGallery({ intervalMinutes = 3 }: HeroImageGalle
   useEffect(() => {
     if (!isMounted) return
 
-    const changeImage = () => {
-      setOpacity(0)
-      setTimeout(() => {
-        setCurrentImageIndex((prevIndex) => 
-          (prevIndex + 1) % carImages.length
-        )
-        setOpacity(1)
-      }, 1000)
-    }
-
-    const intervalMs = intervalMinutes * 60 * 1000
-    const interval = setInterval(changeImage, intervalMs)
+    const intervalMs = intervalMinutes * 60 * 1000 // 45 seconds
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => 
+        (prevIndex + 1) % carImages.length
+      )
+    }, intervalMs)
+    
     return () => clearInterval(interval)
   }, [isMounted, intervalMinutes])
 
   if (!isMounted) {
     return (
-      <div className="relative h-[300px] lg:h-full w-full overflow-hidden rounded-lg md:rounded-xl bg-gradient-to-br from-gray-800 to-gray-900">
-        <div className="flex h-full items-center justify-center">
-          <div className="text-center text-white">
-            <p>Loading gallery...</p>
+      <div className="relative h-[300px] lg:h-full w-full overflow-hidden rounded-lg md:rounded-xl">
+        {/* Skeleton loader with car icon */}
+        <div className="h-full w-full flex flex-col items-center justify-center bg-linear-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 p-4">
+          {/* Animated car icon */}
+          <motion.div
+            animate={{ 
+              y: [0, -10, 0],
+              rotate: [0, 5, 0]
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="mb-4"
+          >
+            <Car className="h-12 w-12 text-primary dark:text-primary-foreground" />
+          </motion.div>
+          
+          {/* Text skeleton */}
+          <Skeleton className="h-4 w-32 mb-2" />
+          <Skeleton className="h-3 w-24" />
+          
+          {/* Image area skeleton */}
+          <div className="mt-6 w-full">
+            <Skeleton className="h-48 w-full rounded-lg" />
           </div>
         </div>
       </div>
@@ -55,14 +74,21 @@ export default function HeroImageGallery({ intervalMinutes = 3 }: HeroImageGalle
 
   return (
     <div className="relative h-[300px] lg:h-full w-full overflow-hidden">
-      {/* Current Image with Fade Transition */}
-      <div 
-        className="h-full w-full bg-cover bg-center transition-opacity duration-1000"
-        style={{
-          backgroundImage: `url(${carImages[currentImageIndex]})`,
-          opacity: opacity
-        }}
-      />
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentImageIndex}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1 }}
+          className="h-full w-full bg-cover bg-center absolute inset-0"
+          style={{
+            backgroundImage: `url(${carImages[currentImageIndex]})`,
+            backgroundPosition: 'left center',
+            backgroundSize: 'cover'
+          }}
+        />
+      </AnimatePresence>
     </div>
   )
 }

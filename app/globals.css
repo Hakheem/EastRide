@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+/* @plugin "daisyui"; */
 
 @custom-variant dark (&:is(.dark *));
 
@@ -129,4 +130,59 @@
 
 .grotesk {
   font-family: var(--font-grotesk);
+}
+
+
+
+.padded {
+  max-width: 80rem; /* 7xl = 80rem */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem; /* px-4 = 1rem */
+  padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+  .padded {
+    padding-left: 1.5rem; /* md:px-6 = 1.5rem */
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .padded {
+    padding-left: 2rem; /* lg:px-8 = 2rem */
+    padding-right: 2rem;
+  }
+}
+
+/* Add to globals.css */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Gradient text class */
+.text-gradient {
+  background: linear-gradient(to right, var(--primary), #06b6d4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Line clamp utilities */
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
