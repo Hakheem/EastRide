@@ -4,36 +4,26 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 import { signOut } from 'next-auth/react'
+import { ThemeToggle } from './ThemeToggle'
 import { useSession } from 'next-auth/react'
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Heart, Car } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { Heart, Car, LogOut } from 'lucide-react'
 
 export function Navbar() {
     const { data: session } = useSession()
-    const router = useRouter()
-
-    // Redirect admins/superadmins to their respective pages if they try to access main site
-    useEffect(() => {
-        const userRole = (session?.user as any)?.role
-        if (userRole === 'superadmin') {
-            router.push('/superadmin')
-        } else if (userRole === 'admin') {
-            router.push('/admin')
-        }
-    }, [(session?.user as any)?.role, router])
 
     const handleLogout = async () => {
-        await signOut({ redirectTo: '/login' })
+        await signOut({ redirect: false })
+        window.location.reload() 
     }
+
+    const userRole = (session?.user as any)?.role
 
     return (
         <nav className='flex justify-between items-center padded py-4'>
@@ -55,7 +45,7 @@ export function Navbar() {
                     <>
                         {/* Saved Cars Button - hidden on mobile */}
                         <Link href="/saved-cars" className='hidden sm:block'>
-                            <Button variant="outline"  className='gap-2'>
+                            <Button variant="outline" className='gap-2'>
                                 <Heart className='w-4 h-4' />
                                 <span>Saved Cars</span>
                             </Button>
@@ -70,7 +60,7 @@ export function Navbar() {
                         </Link>
 
                         {/* Mobile Icons */}
-                        <div className='flex gap-2 sm:hidden'>
+                        <div className='flex items-center gap-2 sm:hidden'>
                             <Link href="/saved-cars">
                                 <Button variant="ghost" size="icon" className='h-9 w-9'>
                                     <Heart className='w-4 h-4' />
@@ -90,10 +80,10 @@ export function Navbar() {
                                     {session.user.image ? (
                                         <Image
                                             src={session.user.image}
-                                            alt={session.user.name || "User"}
-                                            width={32}
-                                            height={32}
-                                            className='w-8 h-8  rounded-full  cursor-pointer'
+                                            alt={session.user.name || 'User'}
+                                            width={40}
+                                            height={40}
+                                            className='w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-primary hover:border-primary/80 transition-colors'
                                             unoptimized
                                         />
                                     ) : (
@@ -111,17 +101,17 @@ export function Navbar() {
                                         <Image
                                             src={session.user.image}
                                             alt={session.user.name || 'User'}
-                                            width={48}
-                                            height={48}
-                                            className='w-12 h-12 rounded-full mb-2'
+                                            width={40}
+                                            height={40}
+                                            className='w-10 h-10 rounded-full mb-2'
                                             unoptimized
                                         />
                                     )}
                                     <p className='font-semibold text-sm'>{session.user.name}</p>
                                     <p className='text-xs text-gray-500 dark:text-gray-400'>{session.user.email}</p>
-                                    {(session.user as any)?.role && (
+                                    {userRole && (
                                         <p className='text-xs text-primary font-medium mt-1'>
-                                            {((session.user as any)?.role as string).charAt(0).toUpperCase() + ((session.user as any)?.role as string).slice(1)}
+                                            {userRole.charAt(0).toUpperCase() + userRole.slice(1).toLowerCase()}
                                         </p>
                                     )}
                                 </div>
@@ -138,16 +128,19 @@ export function Navbar() {
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={handleLogout} className='text-red-600 dark:text-red-400'>
+                                    <LogOut className='w-4 h-4 mr-2' />
                                     Logout
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
+
                     </>
                 ) : (
                     <>
                         <Link href="/login">
-                            <Button>Login</Button>
+                            <Button>Get Started</Button>
                         </Link>
+                        {/* <ThemeToggle /> */}
                     </>
                 )}
             </div>

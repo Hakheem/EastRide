@@ -4,10 +4,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 import { signIn } from "next-auth/react"
-import { redirect, useRouter } from "next/navigation"
-import { auth } from "@/app/utils/auth"
 
 // SVG Icons
 const GoogleIcon = () => (
@@ -40,15 +37,14 @@ const GithubIcon = () => (
 export function LoginForm() {
     const [isGoogleLoading, setIsGoogleLoading] = useState(false)
     const [isGithubLoading, setIsGithubLoading] = useState(false)
-    const router = useRouter()
 
     const handleGoogleLogin = async () => {
         setIsGoogleLoading(true)
         try {
+            // callbackUrl will redirect to home, then middleware will handle role-based routing
             await signIn('google', { callbackUrl: '/' })
         } catch (error) {
-            console.error(error)
-        } finally {
+            console.error(error) 
             setIsGoogleLoading(false)
         }
     }
@@ -56,10 +52,10 @@ export function LoginForm() {
     const handleGithubLogin = async () => {
         setIsGithubLoading(true)
         try {
+            // callbackUrl will redirect to home, then middleware will handle role-based routing
             await signIn('github', { callbackUrl: '/' })
         } catch (error) {
             console.error(error)
-        } finally {
             setIsGithubLoading(false)
         }
     }
@@ -109,4 +105,3 @@ export function LoginForm() {
         </Card>
     )
 }
-

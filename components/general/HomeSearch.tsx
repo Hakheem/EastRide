@@ -1,51 +1,314 @@
-
 'use client'
 
-import React, {useState} from 'react'
-import { 
-  Camera
-} from "lucide-react"
+import React, { useState, useRef } from 'react'
+import { Camera, Upload } from "lucide-react"
 import { Button } from '@/components/ui/button'
+import { useDropzone } from 'react-dropzone'
+import { toast } from 'sonner'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const HomeSearch = () => {
-const [searchTerm, setSearchTerm] = useState('')
-const [isImageSearch, setIsImageSearch] = useState(false)
-  const handleTextSubmit = () => {}
+  const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [isImageSearchActive, setIsImageSearchActive] = useState(false)
+  const [imagePreview, setImagePreview] = useState('')
+  const [searchImage, setSearchImage] = useState<File | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const [isSearching, setIsSearching] = useState(false)
+
+  const handleTextSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!searchTerm.trim()) {
+      toast.error("Please enter search term")
+      return
+    }
+
+    setIsSearching(true)
+
+    setTimeout(() => {
+      router.push(`/cars?search=${encodeURIComponent(searchTerm.trim())}`)
+      setIsSearching(false)
+    }, 800)
+  }
+
+  const handleImageSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!searchImage) {
+      toast.error("Please upload an image first")
+      return
+    }
+
+    setIsSearching(true)
+
+    console.log('Searching with image:', searchImage.name)
+
+    setTimeout(() => {
+      toast.success('Image search completed')
+      setIsSearching(false)
+    }, 1500)
+  }
+
+  const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
+    onDrop: (acceptedFiles: File[]) => {
+      const file = acceptedFiles[0]
+
+      if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          toast.error("Image size must be less than 5MB")
+          return
+        }
+
+        setIsUploading(true)
+        setSearchImage(file)
+
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          setImagePreview(reader.result as string)
+          setIsUploading(false)
+          toast.success("Image uploaded successfully")
+        }
+
+        reader.onerror = () => {
+          setIsUploading(false)
+          toast.error("Failed to upload image")
+        }
+
+        reader.readAsDataURL(file)
+      }
+    },
+    accept: {
+      'image/*': [".jpeg", ".jpg", ".png"]
+    },
+    maxFiles: 1,
+    noClick: true,
+  })
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size must be less than 5MB")
+      return
+    }
+
+    setIsUploading(true)
+    setSearchImage(file)
+
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string)
+      setIsUploading(false)
+      toast.success("Image uploaded successfully")
+    }
+
+    reader.onerror = () => {
+      setIsUploading(false)
+      toast.error("Failed to upload image")
+    }
+
+    reader.readAsDataURL(file)
+  }
+
+  const removeImage = () => {
+    setImagePreview('')
+    setSearchImage(null)
+    toast.info('Image removed')
+  }
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click()
+  }
 
   return (
     <div>
       <form onSubmit={handleTextSubmit}>
-<div className="relative flex items-center">
-  <input
-    type="text"
-    placeholder="Search for cars, brands, models or use our AI Image Search..."
-    value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-    className="w-full px-4 py-6 pl-10 pr-12 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-    />
+        <div className="relative flex items-center">
+          <input
+            type="text"
+            placeholder="Search for cars, brands, models or use our AI Image Search..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-4 py-5 pl-4 pr-48 border border-gray-300 dark:border-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800 dark:text-white disabled:opacity-50"
+            disabled={isSearching}
+          />
 
-<div className="absolute left-3">
-  <Camera
-  size={32}
-  onClick={() => setIsImageSearch(!isImageSearch)}
-  className={`cursor-pointer p-1.5 rounded-xl ${isImageSearch ? 'text-primary' : 'text-gray-400 hover:text-gray-600'}`}
-  />
+          <div className="absolute right-32">
+            <Camera
+              size={42} 
+              onClick={() => {
+                if (isSearching) return
+                setIsImageSearchActive(!isImageSearchActive)
+                if (isImageSearchActive) {
+                  setImagePreview('')
+                  setSearchImage(null)
+                }
+              }}
+              className={`cursor-pointer p-2 rounded-full ${isSearching
+                  ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                  : isImageSearchActive
+                    ? 'text-primary bg-primary/10 hover:bg-primary/20'
+                    : 'text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+                } transition-all duration-200`}
+              aria-label={isImageSearchActive ? "Switch to text search" : "Switch to image search"}
+            />
+          </div>
 
-</div>
-
-<Button type="submit" className="absolute right-2 px-4 py-2 bg-primary text-white rounded-sm hover:bg-primary/90">
-  Search
-</Button>
-
-</div>
-
+          <Button
+            type="submit"
+            disabled={isSearching}
+            className="absolute right-2 px-8 py-6 bg-primary text-white rounded-full hover:bg-primary/90 transition-colors disabled:opacity-50 text-base"
+          >
+            {isSearching ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Searching...
+              </div>
+            ) : (
+              'Search'
+            )}
+          </Button>
+        </div>
       </form>
 
+      <AnimatePresence>
+        {isImageSearchActive && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mt-4 p-6 border border-gray-300 dark:border-gray-700 rounded-2xl bg-gray-50 dark:bg-gray-800"
+          >
+            <form onSubmit={handleImageSearch}>
+              <div className="space-y-4">
+                {isUploading ? (
+                  <div className="text-center">
+                    <Skeleton className="w-full max-w-md mx-auto h-64 mb-4 rounded-2xl" />
+                    <div className="flex gap-3 justify-center">
+                      <Skeleton className="h-10 w-32 rounded-full" />
+                      <Skeleton className="h-10 w-40 rounded-full" />
+                    </div>
+                  </div>
+                ) : imagePreview ? (
+                  <div className="text-center">
+                    <div className="relative w-full max-w-md mx-auto h-64 mb-4">
+                      <Image
+                        src={imagePreview}
+                        alt="Uploaded Image"
+                        fill
+                        className="object-contain rounded-2xl"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    </div>
+                    <div className="flex gap-3 justify-center">
+                      <Button
+                        variant="outline"
+                        onClick={removeImage}
+                        disabled={isSearching}
+                        className="border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 rounded-full px-6"
+                      >
+                        Remove Image
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={isSearching}
+                        className="bg-primary hover:bg-primary/90 disabled:opacity-50 rounded-full px-6"
+                      >
+                        {isSearching ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            Searching...
+                          </div>
+                        ) : (
+                          'Search with Image'
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    {...getRootProps()}
+                    className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-colors ${isDragActive
+                        ? 'border-primary bg-primary/5'
+                        : 'border-gray-300 dark:border-gray-600 hover:border-primary dark:hover:border-primary'
+                      } ${isSearching ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileSelect}
+                      accept="image/jpeg,image/jpg,image/png"
+                      className="hidden"
+                    />
+                    
+                    <input {...getInputProps()} />
+                    
+                    <Upload className="mx-auto mb-4 text-gray-400 dark:text-gray-500 size-14" />
+                    <p className="mb-2 text-gray-700 dark:text-gray-300 font-medium">
+                      {isDragActive && !isDragReject
+                        ? "Drop the image here"
+                        : "Drag & drop a car image or click to select"
+                      }
+                    </p>
 
+                    {isDragReject && (
+                      <p className="text-red-500 mb-2 font-medium">Invalid image type</p>
+                    )}
 
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                      Supports: JPG, PNG (max 5MB)
+                    </p>
 
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="mt-2 disabled:opacity-50 rounded-full px-8"
+                      disabled={isSearching}
+                      onClick={triggerFileInput}
+                    >
+                      <Upload className="mr-2 w-4 h-4" />
+                      {isSearching ? 'Processing...' : 'Select Image'}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {isSearching && (
+        <div className="fixed inset-0 bg-black/10 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-2xl max-w-sm w-full mx-4">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {isImageSearchActive ? 'Searching with Image...' : 'Searching Cars...'}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 text-center">
+                {isImageSearchActive
+                  ? 'Our AI is analyzing your image to find matching cars'
+                  : 'Finding the best matches for your search'
+                }
+              </p>
+              <div className="w-full space-y-2 mt-4">
+                <Skeleton className="h-2 w-full rounded-full" />
+                <Skeleton className="h-2 w-3/4 rounded-full" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
-} 
+}
 
 export default HomeSearch
+

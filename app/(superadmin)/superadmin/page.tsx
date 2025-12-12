@@ -1,18 +1,16 @@
 import { auth } from "@/app/utils/auth";
-import { redirect } from "next/navigation";
 
 export default async function SuperAdminPage() {
     const session = await auth();
 
-    if (!session?.user || session.user.role !== "superadmin") {
-        redirect("/");
-    }
+    // Middleware already protects this route, no need for redirect
+    console.log("📄 SuperAdmin Page - User Role:", (session?.user as any)?.role);
 
     return (
         <div className="py-12">
             <h1 className="text-4xl font-bold mb-8">SuperAdmin Dashboard</h1>
             <div className="bg-linear-to-r from-purple-500 to-pink-500 text-white rounded-lg p-8">
-                <p className="text-lg">Welcome, {session.user.name}!</p>
+                <p className="text-lg">Welcome, {session?.user?.name}!</p>
                 <p className="text-sm opacity-90 mt-2">
                     You have full system access as a SuperAdmin.
                 </p>
@@ -35,3 +33,4 @@ export default async function SuperAdminPage() {
         </div>
     );
 }
+

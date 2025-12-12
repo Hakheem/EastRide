@@ -49,9 +49,9 @@ export const featuredCars = [
     color: "Pearl White",
     wishListed: true,
     images: [
-      "/hero-1.png",
-      "/hero-2.png",
-      "/hero-3.png"
+      "/hero_1.png",
+      "/hero_2.png",
+      "/hero_3.png"
     ],
     features: ["4WD", "Leather Seats", "Sunroof", "Navigation", "Heated Seats"],
     location: "Nairobi",
@@ -94,10 +94,10 @@ export const featuredCars = [
     color: "Titanium Gray",
     wishListed: true,
     images: [
-      "/pajero-1.png",
-      "/pajero-2.png",
-      "/pajero-3.png",
-      "/pajero-4.png"
+      "/hero_1.png",
+      "/hero_2.png",
+      "/hero_3.png",
+      "/hero_4.png"
     ],
     features: ["7 Seater", "Off-road Mode", "Rear AC", "Tow Package"],
     location: "Kampala",
@@ -118,8 +118,8 @@ export const featuredCars = [
     color: "Marine Blue",
     wishListed: false,
     images: [
-      "/forester-1.png",
-      "/forester-2.png"
+      "/hero_1.png",
+      "/hero_2.png"
     ],
     features: ["Symmetrical AWD", "Eyesight Safety", "Apple CarPlay", "Roof Rails"],
     location: "Dar es Salaam",
@@ -140,9 +140,9 @@ export const featuredCars = [
     color: "Tornado Red",
     wishListed: true,
     images: [
-      "/golf-gti-1.png",
-      "/golf-gti-2.png",
-      "/golf-gti-3.png"
+      "/gtr.png",
+      "/hero_2.png",
+      "/Benz-E53.png"
     ],
     features: ["Sport Suspension", "Paddle Shifters", "Premium Audio", "LED DRLs"],
     location: "Nairobi",
@@ -163,8 +163,8 @@ export const featuredCars = [
     color: "Silver Metallic",
     wishListed: false,
     images: [
-      "/dmax-1.png",
-      "/dmax-2.png"
+      "/hero_1.png",
+      "/mustang.png"
     ],
     features: ["4x4", "Double Cab", "Canopy", "Reverse Camera", "Bluetooth"],
     location: "Arusha",
@@ -185,10 +185,10 @@ export const featuredCars = [
     color: "Santorini Black",
     wishListed: true,
     images: [
-      "/rangerover-1.png",
-      "/rangerover-2.png",
-      "/rangerover-3.png",
-      "/rangerover-4.png"
+      "/hero_1.png",
+      "/hero_2.png",
+      "/hero_3.png",
+      "/hero_4.png"
     ],
     features: ["Terrain Response", "Meridian Sound", "Massage Seats", "HUD Display"],
     location: "Nairobi",
@@ -209,8 +209,8 @@ export const featuredCars = [
     color: "Championship White",
     wishListed: false,
     images: [
-      "/civic-typeR-1.png",
-      "/civic-typeR-2.png"
+      "/gtr.png",
+      "/her0-1.png"
     ],
     features: ["Sport Mode", "Recaro Seats", "Brembo Brakes", "Triple Exhaust"],
     location: "Mombasa",
@@ -223,51 +223,55 @@ export const featuredCars = [
 export const carBrands = [
   {
     brand: "Toyota",
-    image: "/toyota-7.svg" 
+    image: "/toyota-svg.svg" 
   },
   {
     brand: "Mercedes-Benz",
-    image: "/mercedes.svg"
+    image: "/benz-svg.svg"
   },
   {
     brand: "Mitsubishi",
-    image: "/mitsubishi.svg"
+    image: "/mitsubishi-svg.svg"
   },
   {
     brand: "Subaru",
-    image: "/subaru-1.svg"
+    image: "/subaru-svg.svg"
   },
   {
     brand: "Volkswagen",
-    image: "/volkswagen.svg"
+    image: "/volkswagen-svg.svg"
   },
   {
     brand: "Isuzu",
-    image: "/isuzu.svg"
+    image: "/isuzu-svg.svg"
   },
   {
     brand: "Land Rover",
-    image: "/https://worldvectorlogo.com/downloaded/volkswagen-10.svg"
+    image: "/land-rover-svg.svg"
   },
   {
     brand: "Honda",
-    image: "/honda.svg"
+    image: "/honda-svg.svg"
   },
   {
     brand: "Ford",
-    image: "/ford.svg"
+    image: "/ford-svg.svg"
   },
   {
     brand: "Nissan",
-    image: "/nissan.svg"
+    image: "/nissan-svg.svg"
   },
   {
     brand: "BMW",
-    image: "/bmw.svg"
+    image: "/bmw-svg.svg"
   },
   {
     brand: "Audi",
-    image: "/audi.svg"
+    image: "/audi-svg.svg"
+  },
+  {
+    brand: "Suzuki",
+    image: "/suzuki_logo.png"
   }
 ];
 

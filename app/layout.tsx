@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "../components/general/ThemeProvider"
 import { SessionProvider } from "@/components/providers/SessionProviders";
 import { ThemeToggle } from "@/components/general/ThemeToggle";
+import { Toaster } from "sonner";
 
 
 const lato = Lato({
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           >
             {children}
           </ThemeProvider>
+          <Toaster richColors />
         </SessionProvider>
       </body>
     </html>

@@ -7,19 +7,51 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Enums
+enum UserRole { 
+  USER
+  ADMIN
+  SUPERADMIN
+}
+
+enum CarStatus {
+  AVAILABLE
+  UNAVAILABLE
+  SOLD
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+// User model
 model User {
   id            String    @id @default(auto()) @map("_id") @db.ObjectId
   email         String    @unique
   emailVerified DateTime? 
   name          String?
   image         String?
-  role          String    @default("user") // "user", "admin", "superadmin"
+  role          UserRole  @default(USER)
 
   // Relations
-  accounts     Account[]
-  sessions     Session[]
-  savedCars    SavedCar[]
-  reservations Reservation[]
+  accounts          Account[]
+  sessions          Session[]
+  savedCars         UserSavedCar[]
+  testDriveBookings TestDriveBooking[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -69,28 +101,41 @@ model VerificationToken {
 
 // Car model
 model Car {
-  id             String  @id @default(auto()) @map("_id") @db.ObjectId
-  title          String
-  description    String?
-  price          Float
-  image          String?
-  mileage        Int?
-  year           Int?
-  color          String?
-  fuelType       String?
-  transmission   String?
-  engineCapacity String?
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  make         String
+  model        String
+  year         Int
+  price        Float
+  mileage      Int
+  color        String
+  fuelType     String
+  transmission String
+  bodyType     String
+  seats        Int?
+  description  String?
+  status       CarStatus  @default(AVAILABLE)
+  featured     Boolean    @default(false)
+  images       String[]
 
   // Relations
-  savedBy      SavedCar[]
-  reservations Reservation[]
+  savedBy           UserSavedCar[]
+  testDriveBookings TestDriveBooking[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([make])
+  @@index([model])
+  @@index([bodyType])
+  @@index([price])
+  @@index([year])
+  @@index([status])
+  @@index([fuelType])
+  @@index([featured])
 }
 
-// Saved Cars model (for bookmarking)
-model SavedCar {
+// User Saved Cars model
+model UserSavedCar {
   id     String @id @default(auto()) @map("_id") @db.ObjectId
   userId String @db.ObjectId
   carId  String @db.ObjectId
@@ -98,30 +143,67 @@ model SavedCar {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   car  Car  @relation(fields: [carId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
+  savedAt DateTime @default(now())
 
   @@unique([userId, carId])
   @@index([userId])
   @@index([carId])
 }
 
-// Reservation model
-model Reservation {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId     String   @db.ObjectId
-  carId      String   @db.ObjectId
-  startDate  DateTime
-  endDate    DateTime
-  status     String   @default("pending") // "pending", "confirmed", "cancelled"
-  totalPrice Float?
+// Test Drive Booking model
+model TestDriveBooking {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  carId       String        @db.ObjectId
+  userId      String        @db.ObjectId
+  bookingDate DateTime      @db.Date
+  startTime   String
+  endTime     String
+  status      BookingStatus @default(PENDING)
+  notes       String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  car  Car  @relation(fields: [carId], references: [id], onDelete: Cascade)
+  car  Car  @relation(fields: [carId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([userId])
   @@index([carId])
+  @@index([userId])
   @@index([status])
 }
+
+// Dealership Info model
+model DealershipInfo {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  name    String @default("East Africa Rides")
+  address String @default("35/60 Nairobi Kenya")
+  phone   String @default("+254769403162")
+  email   String @default("hakheem67@gmail.com")
+
+  // Relations
+  workingHours WorkingHours[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Working Hours model
+model WorkingHours {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  dealershipId  String       @db.ObjectId
+  dayOfWeek     DayOfWeek
+  openTime      String // Format: HH:MM (24-hour)
+  closeTime     String // Format: HH:MM (24-hour)
+  isOpen        Boolean      @default(true)
+
+  dealership DealershipInfo @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([dealershipId, dayOfWeek])
+  @@index([dealershipId])
+  @@index([dayOfWeek])
+  @@index([isOpen])
+}
+
