@@ -49,7 +49,7 @@ export default function AdminLayout({
       </div>
 
       {/* Main Content */}
-      <div className="lg:pl-64">
+      <div className="lg:pl-60">
         {/* Header */}
         <header className="sticky top-0 z-30 bg-background  px-4 lg:px-6 py-4">
           <div className="flex items-center justify-between">
@@ -72,7 +72,7 @@ export default function AdminLayout({
         </header>
 
         {/* Page Content */}
-        <div className="p-4 lg:p-6">
+        <div className="px-4 lg:px-6">
           {children}
         </div>
       </div>

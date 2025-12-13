@@ -73,7 +73,7 @@ export function Sidebar({
   };
 
   return (
-    <div className="w-56 h-screen bg-slate-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col">
+    <div className="w-60 h-screen bg-slate-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col">
       {/* Header */}
       <div className="p-6 border-b border-gray-200 dark:border-gray-800">
         <div className="flex items-center gap-3">
@@ -81,7 +81,7 @@ export function Sidebar({
             <span className="text-white font-bold text-lg">EA</span>
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-900 dark:text-white clamp-1">
+            <h1 className="text-lg font-bold text-gray-900 dark:text-white truncate clamp-1">
               {dealershipName}
             </h1>
             <p className="text-sm text-gray-600 dark:text-gray-400">

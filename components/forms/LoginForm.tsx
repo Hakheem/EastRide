@@ -67,7 +67,7 @@ export function LoginForm() {
                     Welcome Back
                 </CardTitle>
                 <CardDescription className="text-gray-500 dark:text-gray-400">
-                    Choose your preferred login method
+                    Login with your preferred login method
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
