@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select"
 import { CarFormValues } from './AddCarForm'
 
-// Body Types Array (Aligned with your schema - these are stored as Strings in Car model)
+
 const BODY_TYPES = [
   { value: 'SUV', label: 'SUV' },
   { value: 'Sedan', label: 'Sedan' },
@@ -25,10 +25,11 @@ const BODY_TYPES = [
   { value: 'Minivan', label: 'Minivan' },
   { value: 'Van', label: 'Van' },
   { value: 'Crossover', label: 'Crossover' },
-  { value: 'Sports Car', label: 'Sports Car' },
-  { value: 'Luxury', label: 'Luxury Car' },
-  { value: 'Off-road', label: 'Off-road Vehicle' },
-  { value: 'Compact', label: 'Compact Car' },
+  { value: 'Sports', label: 'Sports Car ' },
+  { value: 'Luxury', label: 'Luxury ' }, 
+  { value: 'Luxury SUV', label: 'Luxury SUV' }, 
+  { value: 'Off-road', label: 'Off-road ' },
+  { value: 'Compact Car', label: 'Compact Car' },
 ] as const;
 
 // Fuel Types Array (Aligned with your schema - these are stored as Strings in Car model)

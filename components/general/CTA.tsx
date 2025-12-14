@@ -15,20 +15,18 @@ export default function CTA() {
     return (
         <section className="relative py-20 md:py-28">
             {/* Single container div with background and everything */}
-            <div className="relative flex items-center justify-center bg-gradient-to-br from-primary/10 via-background/95 to-cyan-500/10 rounded-3xl mx-4 md:mx-8 lg:mx-12 overflow-hidden py-16 md:py-24">
+            <div className="relative flex items-center justify-center bg-linear-to-br from-primary/15 via-background/95 to-cyan-500/20 dark:from-primary/10 dark:via-background/95 dark:to-cyan-500/10 rounded-3xl mx-4 md:mx-8 lg:mx-12 overflow-hidden py-16 md:py-24">
 
-                {/* Background pattern - subtle and modern */}
+                {/* Background pattern  */}
                 <div className="absolute inset-0">
-                    {/* Gradient overlay that works for both light/dark */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-background/85 via-background/70 to-background/85" />
+                    <div className="absolute inset-0 bg-linear-to-r from-background/80 via-background/50 to-background/80 dark:from-background/85 dark:via-background/70 dark:to-background/85" />
 
-                    {/* Diagonal pattern */}
-                    <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03]">
-                        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_48%,currentColor_49%,currentColor_51%,transparent_52%)] bg-[size:60px_60px]" />
+                    <div className="absolute inset-0 opacity-10 dark:opacity-[0.03]">
+                        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_48%,currentColor_49%,currentColor_51%,transparent_52%)] bg-size-[60px_60px]" />
                     </div>
                 </div>
 
-                {/* Animated decorative elements - bigger and more visible */}
+                {/* decorative elements */}
                 <motion.div
                     animate={{
                         rotate: [0, 5, 0, -5, 0],
@@ -39,9 +37,9 @@ export default function CTA() {
                         repeat: Infinity,
                         ease: "easeInOut"
                     }}
-                    className="absolute top-6 left-6 w-16 h-16 opacity-20 dark:opacity-15"
+                    className="absolute top-6 left-6 w-16 h-16 opacity-30 dark:opacity-15"
                 >
-                    <Car className="w-full h-full" />
+                    <Car className="w-full h-full text-primary/40 dark:text-primary/20" />
                 </motion.div>
 
                 <motion.div
@@ -55,9 +53,9 @@ export default function CTA() {
                         ease: "easeInOut",
                         delay: 1
                     }}
-                    className="absolute bottom-8 right-8 w-20 h-20 opacity-20 dark:opacity-15"
+                    className="absolute bottom-8 right-8 w-20 h-20 opacity-30 dark:opacity-15"
                 >
-                    <Shield className="w-full h-full" />
+                    <Shield className="w-full h-full text-primary/40 dark:text-primary/20" />
                 </motion.div>
 
                 {/* Left Car - Adjusted positioning */}
@@ -80,8 +78,8 @@ export default function CTA() {
                             backgroundRepeat: 'no-repeat'
                         }}
                     />
-                    {/* Enhanced gradient overlay for better text contrast */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/50 to-transparent" />
+                    {/* Enhanced gradient overlay - stronger for light mode */}
+                    <div className="absolute inset-0 bg-linear-to-r from-background/90 via-background/50 to-transparent dark:from-background/90 dark:via-background/50 dark:to-transparent" />
                 </motion.div>
 
                 {/* Right Car - Adjusted positioning */}
@@ -104,8 +102,7 @@ export default function CTA() {
                             backgroundRepeat: 'no-repeat'
                         }}
                     />
-                    {/* Enhanced gradient overlay for better text contrast */}
-                    <div className="absolute inset-0 bg-gradient-to-l from-background/90 via-background/50 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-l from-background/90 via-background/50 to-transparent dark:from-background/90 dark:via-background/50 dark:to-transparent" />
                 </motion.div>
 
                 {/* Center Content */}
@@ -114,7 +111,7 @@ export default function CTA() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.7 }}
-                        className="text-3xl  lg:text-5xl font-bold text-gray-900 dark:text-white mb-6"
+                        className="text-3xl  lg:text-5xl capitalize font-bold text-gray-900 dark:text-white mb-6"
                     >
                         Ready to find your <br /> <span className="text-gradient">Dream Car?</span>
                     </motion.h2>
@@ -154,7 +151,7 @@ export default function CTA() {
                         )}
                     </motion.div>
 
-                    {/* Trust badges with better icons */}
+                    {/* Trust badges */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}

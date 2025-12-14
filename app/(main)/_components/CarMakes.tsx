@@ -9,11 +9,11 @@ import Image from 'next/image'
 import { carBrands } from '@/data/data'
 
 const CarMakes = () => {
-  const [isPaused, setIsPaused] = useState<boolean>(false) // Added type
-  const [scrollPosition, setScrollPosition] = useState<number>(0) // Added type
+  const [isPaused, setIsPaused] = useState<boolean>(false)
+  const [scrollPosition, setScrollPosition] = useState<number>(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
-  const animationRef = useRef<number | undefined>(undefined) // Added type
+  const animationRef = useRef<number | undefined>(undefined)
 
   useEffect(() => {
     if (isPaused || !containerRef.current || !contentRef.current) return
@@ -29,7 +29,7 @@ const CarMakes = () => {
 
     const animate = () => {
       setScrollPosition(prev => {
-        const newPos = prev + 0.5 // Adjust speed here (lower = slower)
+        const newPos = prev + 0.8 // Increased from 0.5 for faster scrolling
         
         // Reset position when reaching the end
         if (newPos >= maxScroll) {
@@ -54,7 +54,7 @@ const CarMakes = () => {
     <section>
       <div className='py-12 padded'>
         <div className='flex items-center justify-between mb-8'>
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             Browse by Make
           </h2>
           <Button variant="link" className="text-sm p-0" asChild>
@@ -73,7 +73,7 @@ const CarMakes = () => {
         >
           <motion.div
             ref={contentRef}
-            className="flex items-center gap-4 md:gap-6"
+            className="flex items-center gap-3 md:gap-4" 
             animate={{ x: -scrollPosition }}
             transition={{ type: "tween", ease: "linear", duration: 0 }}
             style={{ width: 'max-content' }}
@@ -83,59 +83,58 @@ const CarMakes = () => {
                 key={brand.brand}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.03 }}
+                transition={{ delay: index * 0.02 }}
                 className="shrink-0"
-               
               >
                 <Link 
-                  href={`/cars?brand=${brand.brand}`}  
+                  href={`/cars?make=${brand.brand}`}  
                   className="group block"
                   onMouseEnter={() => setIsPaused(true)}
                   onMouseLeave={() => setIsPaused(false)}
                 >
                   <div className="
-                    w-28 h-28 
-                    sm:w-32 sm:h-32 
-                    md:w-36 md:h-36 
-                    lg:w-40 lg:h-40 
-                    xl:w-44 xl:h-44 
-                    2xl:w-48 2xl:h-48 
-                    flex flex-col items-center justify-center p-3 
-                    // bg-white dark:bg-gray-800 
-                    // rounded-lg 
-                    shadow hover:shadow-sm
+                    w-20 h-20         
+                    sm:w-24 sm:h-24   
+                    md:w-28 md:h-28   
+                    lg:w-32 lg:h-32   
+                    xl:w-36 xl:h-36   
+                    2xl:w-40 2xl:h-40 
+                    flex flex-col items-center justify-center p-2
+                    bg-white dark:bg-gray-800 
+                    rounded-lg         
+                    shadow-sm hover:shadow-md
                     transition-all duration-300 
-                    // border border-gray-100 dark:border-gray-700
-                    my-2
+                    border border-gray-100 dark:border-gray-700
+                    hover:border-primary/30
+                    my-2             
                   ">
                     <div className="
                       relative 
-                      w-12 h-12 
-                      sm:w-14 sm:h-14 
-                      md:w-16 md:h-16 
-                      lg:w-18 lg:h-18 
-                      xl:w-20 xl:h-20 
-                      2xl:w-24 2xl:h-24 
-                      mb-2 md:mb-3
+                      w-10 h-10        
+                      sm:w-12 sm:h-12  
+                      md:w-14 md:h-14 
+                      lg:w-16 lg:h-16  
+                      xl:w-18 xl:h-18  
+                      2xl:w-20 2xl:h-20 
+                      mb-2
                     ">
                       <Image
                         src={brand.image}
                         alt={brand.brand}
                         fill
-                        className="object-contain"
-                        sizes="(max-width: 640px) 48px, (max-width: 768px) 56px, (max-width: 1024px) 64px, (max-width: 1280px) 72px, 96px"
+                        className="object-contain group-hover:scale-105 transition-transform duration-300"
+                        sizes="(max-width: 640px) 40px, (max-width: 768px) 48px, (max-width: 1024px) 56px, (max-width: 1280px) 64px, 80px"
                       />
                     </div>
                     <span className="
-                      text-xs 
-                      sm:text-sm 
-                      md:text-base 
-                      font-semibold 
+                      text-xs         
+                      font-medium
                       text-gray-700 dark:text-gray-300 
                       group-hover:text-primary 
                       transition-colors
                       text-center
-                      px-1
+                      px-2
+                      line-clamp-1   
                     ">
                       {brand.brand}
                     </span>
@@ -151,53 +150,55 @@ const CarMakes = () => {
                 className="shrink-0"
               >
                 <Link 
-                  href={`/cars?brand=${brand.brand}`}  
+                  href={`/cars?make=${brand.brand}`}  
                   className="group block"
                   onMouseEnter={() => setIsPaused(true)}
                   onMouseLeave={() => setIsPaused(false)}
                 >
                   <div className="
-                    w-28 h-28 
-                    sm:w-32 sm:h-32 
-                    md:w-36 md:h-36 
-                    lg:w-40 lg:h-40 
-                    xl:w-44 xl:h-44 
-                    2xl:w-48 2xl:h-48 
-                    flex flex-col items-center justify-center p-3 
+                    w-20 h-20
+                    sm:w-24 sm:h-24
+                    md:w-28 md:h-28
+                    lg:w-32 lg:h-32
+                    xl:w-36 xl:h-36
+                    2xl:w-40 2xl:h-40
+                    flex flex-col items-center justify-center p-2
                     bg-white dark:bg-gray-800 
                     rounded-lg
-                    shadow
+                    shadow-sm hover:shadow-md
                     transition-all duration-300 
                     border border-gray-100 dark:border-gray-700
+                    hover:border-primary/30
+                    my-1
                   ">
                     <div className="
                       relative 
-                      w-12 h-12 
-                      sm:w-14 sm:h-14 
-                      md:w-16 md:h-16 
-                      lg:w-18 lg:h-18 
-                      xl:w-20 xl:h-20 
-                      2xl:w-24 2xl:h-24 
-                      mb-2 md:mb-3
+                      w-10 h-10
+                      sm:w-12 sm:h-12
+                      md:w-14 md:h-14
+                      lg:w-16 lg:h-16
+                      xl:w-18 xl:h-18
+                      2xl:w-20 2xl:h-20
+                      mb-1
                     ">
                       <Image
                         src={brand.image}
                         alt={brand.brand}
                         fill
-                        className="object-contain"
-                        sizes="(max-width: 640px) 48px, (max-width: 768px) 56px, (max-width: 1024px) 64px, (max-width: 1280px) 72px, 96px"
+                        className="object-contain group-hover:scale-105 transition-transform duration-300"
+                        sizes="(max-width: 640px) 40px, (max-width: 768px) 48px, (max-width: 1024px) 56px, (max-width: 1280px) 64px, 80px"
                       />
                     </div>
                     <span className="
-                      text-xs 
-                      sm:text-sm 
-                      md:text-base 
-                      font-semibold 
+                      text-xs
+                      font-medium
                       text-gray-700 dark:text-gray-300 
                       group-hover:text-primary 
                       transition-colors
                       text-center
                       px-1
+                      line-clamp-1
+                      mt-2
                     ">
                       {brand.brand}
                     </span>
@@ -207,8 +208,8 @@ const CarMakes = () => {
             ))}
           </motion.div>
           
-          <div className="absolute right-0 top-0 bottom-0 w-20 bg-linear-to-l from-white dark:from-black to-transparent pointer-events-none" />
-          <div className="absolute left-0 top-0 bottom-0 w-20 bg-linear-to-r from-white dark:from-black to-transparent pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-16 bg-linear-to-l from-background dark:from-background to-transparent pointer-events-none" />
+<div className="absolute left-0 top-0 bottom-0 w-16 bg-linear-to-r from-background dark:from-background to-transparent pointer-events-none" />
         </div>
       </div>
     </section>

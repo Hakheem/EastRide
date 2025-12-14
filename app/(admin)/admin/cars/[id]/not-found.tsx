@@ -24,13 +24,13 @@ export default function CarNotFound() {
 
                     <div className="flex flex-col sm:flex-row gap-3 pt-4">
                         <Button asChild className="flex-1">
-                            <Link href="/cars">
+                            <Link href="/admin/cars">
                                 <Search className="mr-2 h-4 w-4" />
                                 Browse Cars
                             </Link>
                         </Button>
                         <Button variant="outline" asChild className="flex-1">
-                            <Link href="/">
+                            <Link href="/admin/dashboard">
                                 <Home className="mr-2 h-4 w-4" />
                                 Go Home
                             </Link>

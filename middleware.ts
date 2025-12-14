@@ -75,7 +75,7 @@ export async function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
-export const config = {
+export const config = { 
   matcher: [
     /*
      * Match all request paths except static files

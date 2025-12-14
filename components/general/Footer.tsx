@@ -49,6 +49,28 @@ const Footer = () => {
                 <Youtube className="w-5 h-5" />
               </a>
             </div>
+<div className='space-y-2'>
+  <div className="flex items-center gap-3">
+    <Phone className="w-4 h-4 text-primary" />
+    <a 
+      href="tel:+254769403162" 
+      className="hover:text-primary transition-colors"
+    >
+      +254 769 403162
+    </a>
+  </div>
+  <div className="flex items-center gap-3">
+    <Mail className="w-4 h-4 text-primary" />
+    <a 
+      href="mailto:support@eastride.co.ke" 
+      className="hover:text-primary transition-colors"
+    >
+      support@eastride.co.ke
+    </a>
+  </div>
+</div>
+
+
           </div>
 
           {/* Quick Links */}
@@ -80,26 +102,18 @@ const Footer = () => {
             <h3 className="text-white text-lg font-semibold mb-6">Stay Updated</h3>
             <p className="text-gray-400 mb-4">Get the latest car deals and updates</p>
             <form className="mb-6">
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <input 
                   type="email" 
                   placeholder="Your email"
                   className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-primary"
                 />
-                <Button type="submit" className="bg-primary hover:bg-primary/90">
-                  <Mail className="w-4 h-4" />
+                <Button type="submit" className="">
+                 Sign Me Up <Mail className="w-4 h-4" />
                 </Button>
               </div>
             </form>
             <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <Phone className="w-4 h-4 text-primary" />
-                <span>+254 700 123 456</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Mail className="w-4 h-4 text-primary" />
-                <span>support@eastride.co.ke</span>
-              </div>
               <div className="flex items-center gap-3">
                 <MapPin className="w-4 h-4 text-primary" />
                 <span>Nairobi, Kenya</span>
@@ -108,48 +122,7 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Trust Badges */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12 pt-8 border-t border-gray-800">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <Shield className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <h4 className="text-white font-medium">Verified Sellers</h4>
-              <p className="text-sm text-gray-400">All sellers verified</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <Car className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <h4 className="text-white font-medium">150+ Point Check</h4>
-              <p className="text-sm text-gray-400">Comprehensive inspection</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <Headphones className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <h4 className="text-white font-medium">24/7 Support</h4>
-              <p className="text-sm text-gray-400">Always here to help</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <CreditCard className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <h4 className="text-white font-medium">Secure Payment</h4>
-              <p className="text-sm text-gray-400">100% safe transactions</p>
-            </div>
-          </div>
-        </div>
+      
       </div>
 
       {/* Bottom Bar */}

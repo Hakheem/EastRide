@@ -40,9 +40,9 @@ export default function HeroImageGallery({ intervalMinutes = 0.75 }: HeroImageGa
 
   if (!isMounted) {
     return (
-      <div className="relative h-[300px] lg:h-full w-full overflow-hidden rounded-lg md:rounded-xl">
+      <div className="relative h-[300px] lg:max-h-[80vh] lg:h-full w-full overflow-hidden ">
         {/* Skeleton loader with car icon */}
-        <div className="h-full w-full flex flex-col items-center justify-center bg-linear-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 p-4">
+        <div className="h-full w-full flex flex-col items-center justify-center bg-linear-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 py-4">
           {/* Animated car icon */}
           <motion.div
             animate={{ 
@@ -73,7 +73,7 @@ export default function HeroImageGallery({ intervalMinutes = 0.75 }: HeroImageGa
   }
 
   return (
-    <div className="relative h-[300px] lg:h-full w-full overflow-hidden">
+    <div className="relative h-[300px] lg:max-h-[80vh] lg:h-full w-full overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentImageIndex}

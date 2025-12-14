@@ -1,104 +1,78 @@
-"use client"
+"use client";
 
-import React, { useState, useRef, useEffect } from 'react'
-import { Card } from '../ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Heart, Eye, Fuel, Cog, Palette, Gauge } from 'lucide-react'
-import Image from 'next/image'
-import { formatPrice } from '@/data/data'
-
-interface CarType {
-  id: number
-  name: string
-  make: string
-  model: string
-  year: number
-  price: number
-  mileage: number
-  transmission: string
-  fuelType: string
-  bodyType: string
-  color: string
-  wishListed: boolean
-  images: string[]
-  features: string[]
-  location: string
-  rating: number
-  sellerType: string
-}
+import React, { useState, useRef, useEffect } from "react";
+import { Card } from "../ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Heart, Eye, Fuel, Cog, Palette, Gauge } from "lucide-react";
+import Image from "next/image";
+import { CarType } from "@/types/car";
+import { formatPrice } from "@/data/data";
 
 interface FeaturedCarsCardProps {
-  car: CarType
+  car: CarType;
 }
 
 const FeaturedCarsCard = ({ car }: FeaturedCarsCardProps) => {
-  const [activeImageIndex, setActiveImageIndex] = useState(0)
-  const [isHovering, setIsHovering] = useState(false)
-  const [wishlisted, setWishlisted] = useState(car.wishListed)
-  const galleryRef = useRef<HTMLDivElement>(null)
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isHovering, setIsHovering] = useState(false);
+  const [wishlisted, setWishlisted] = useState(car.wishListed);
+  const galleryRef = useRef<HTMLDivElement>(null);
+
+  // Ensure we always have at least one image
+  const images = car.images && car.images.length > 0 ? car.images : ["/placeholder.jpg"];
 
   useEffect(() => {
-    const savedWishlist = localStorage.getItem('eastride-wishlist')
+    const savedWishlist = localStorage.getItem("eastride-wishlist");
     if (savedWishlist) {
-      const wishlistIds = JSON.parse(savedWishlist)
-      if (wishlistIds.includes(car.id)) {
-        setWishlisted(true)
-      }
+      const wishlistIds = JSON.parse(savedWishlist);
+      if (wishlistIds.includes(car.id)) setWishlisted(true);
     }
-  }, [car.id])
+  }, [car.id]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!galleryRef.current || car.images.length <= 1) return
-    
-    const container = galleryRef.current
-    const { left, width } = container.getBoundingClientRect()
-    const x = e.clientX - left
-    
-    const segmentWidth = width / car.images.length
-    const newIndex = Math.min(Math.floor(x / segmentWidth), car.images.length - 1)
-    
-    if (newIndex !== activeImageIndex) {
-      setActiveImageIndex(newIndex)
-    }
-  }
+    if (!galleryRef.current || images.length <= 1) return;
+
+    const { left, width } = galleryRef.current.getBoundingClientRect();
+    const x = e.clientX - left;
+
+    const segmentWidth = width / images.length;
+    const newIndex = Math.min(Math.floor(x / segmentWidth), images.length - 1);
+
+    if (newIndex !== activeImageIndex) setActiveImageIndex(newIndex);
+  };
 
   const handleMouseEnter = () => {
-    if (car.images.length > 1) {
-      setIsHovering(true)
-    }
-  }
+    if (images.length > 1) setIsHovering(true);
+  };
 
   const handleMouseLeave = () => {
-    setIsHovering(false)
-    setActiveImageIndex(0)
-  }
+    setIsHovering(false);
+    setActiveImageIndex(0);
+  };
 
   const toggleWishlist = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    
-    const savedWishlist = localStorage.getItem('eastride-wishlist')
-    let wishlistIds = savedWishlist ? JSON.parse(savedWishlist) : []
-    
+    e.preventDefault();
+    e.stopPropagation();
+
+    const savedWishlist = localStorage.getItem("eastride-wishlist");
+    let wishlistIds = savedWishlist ? JSON.parse(savedWishlist) : [];
+
     if (wishlisted) {
-      wishlistIds = wishlistIds.filter((id: number) => id !== car.id)
-      setWishlisted(false)
+      wishlistIds = wishlistIds.filter((id: number) => id !== car.id);
+      setWishlisted(false);
     } else {
-      if (!wishlistIds.includes(car.id)) {
-        wishlistIds.push(car.id)
-      }
-      setWishlisted(true)
+      if (!wishlistIds.includes(car.id)) wishlistIds.push(car.id);
+      setWishlisted(true);
     }
-    
-    localStorage.setItem('eastride-wishlist', JSON.stringify(wishlistIds))
-  }
+
+    localStorage.setItem("eastride-wishlist", JSON.stringify(wishlistIds));
+  };
 
   return (
     <Card className="overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col p-0">
-      
       {/* Image Gallery */}
-      <div 
+      <div
         ref={galleryRef}
         className="relative h-48 md:h-56 overflow-hidden shrink-0"
         onMouseMove={handleMouseMove}
@@ -107,7 +81,7 @@ const FeaturedCarsCard = ({ car }: FeaturedCarsCardProps) => {
       >
         <div className="relative w-full h-full bg-gray-100 dark:bg-gray-800">
           <Image
-            src={car.images[activeImageIndex] || "/placeholder.jpg"}
+            src={images[activeImageIndex]}
             alt={`${car.name} - View ${activeImageIndex + 1}`}
             fill
             className="object-cover block !m-0 !p-0"
@@ -136,19 +110,15 @@ const FeaturedCarsCard = ({ car }: FeaturedCarsCardProps) => {
         <h3 className="font-bold text-lg mb-1 line-clamp-1">{car.name}</h3>
 
         <div className="mb-3">
-          <span className="text-2xl font-bold text-gradient">
-            {formatPrice(car.price)}
-          </span>
+          <span className="text-2xl font-bold text-gradient">{formatPrice(car.price)}</span>
         </div>
 
         <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400 mb-3">
           <Badge variant="outline" className="font-semibold">{car.year}</Badge>
-
           <span className="flex items-center gap-1">
             <Cog className="w-3.5 h-3.5" />
             {car.transmission}
           </span>
-
           <span className="flex items-center gap-1">
             <Fuel className="w-3.5 h-3.5" />
             {car.fuelType}
@@ -156,18 +126,14 @@ const FeaturedCarsCard = ({ car }: FeaturedCarsCardProps) => {
         </div>
 
         <div className="flex flex-wrap gap-2 mb-4">
-          <Badge variant="secondary" className="flex items-center">
-            {car.bodyType}
-          </Badge>
-
+          <Badge variant="secondary" className="flex items-center">{car.bodyType}</Badge>
           <Badge variant="secondary" className="flex items-center gap-1">
             <Gauge className="w-3 h-3" />
             {car.mileage >= 1000 ? `${(car.mileage / 1000).toFixed(0)}k km` : `${car.mileage} km`}
           </Badge>
-
           <Badge variant="secondary" className="flex items-center gap-1">
             <Palette className="w-3 h-3" />
-            {car.color.split(" ")[0]}
+            {car.color ?? "Unknown"}
           </Badge>
         </div>
 
@@ -180,10 +146,10 @@ const FeaturedCarsCard = ({ car }: FeaturedCarsCardProps) => {
           </Button>
         </div>
       </div>
-
     </Card>
-  )
-}
+  );
+};
 
-export default FeaturedCarsCard
+export default FeaturedCarsCard;
+
 

@@ -236,8 +236,8 @@ export default function EditCarForm({ car }: EditCarFormProps) {
             }
         } catch (error) {
             if (error instanceof z.ZodError) {
-                error.errors.forEach((err: z.ZodIssue) => {
-                    toast.error(err.message)
+                error.issues.forEach((issue) => {
+                    toast.error(issue.message)
                 })
             } else {
                 console.error('Error updating car:', error)
@@ -249,7 +249,7 @@ export default function EditCarForm({ car }: EditCarFormProps) {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="container mx-auto px-4">
             {/* Header */}
             <div className="mb-6">
                 <Button variant="ghost" asChild className="mb-4">
@@ -280,6 +280,7 @@ export default function EditCarForm({ car }: EditCarFormProps) {
                                     {...register("make")}
                                     placeholder="e.g., Toyota"
                                     disabled={isSubmitting}
+                                    className="w-full"
                                 />
                                 {errors.make && (
                                     <p className="text-red-500 text-sm">{errors.make.message}</p>
@@ -292,6 +293,7 @@ export default function EditCarForm({ car }: EditCarFormProps) {
                                     {...register("model")}
                                     placeholder="e.g., Corolla"
                                     disabled={isSubmitting}
+                                    className="w-full"
                                 />
                                 {errors.model && (
                                     <p className="text-red-500 text-sm">{errors.model.message}</p>
@@ -307,6 +309,7 @@ export default function EditCarForm({ car }: EditCarFormProps) {
                                     type="number"
                                     {...register("year", { valueAsNumber: true })}
                                     disabled={isSubmitting}
+                                    className="w-full"
                                 />
                                 {errors.year && (
                                     <p className="text-red-500 text-sm">{errors.year.message}</p>
@@ -320,6 +323,7 @@ export default function EditCarForm({ car }: EditCarFormProps) {
                                     {...register("price", { valueAsNumber: true })}
                                     step="1000"
                                     disabled={isSubmitting}
+                                    className="w-full"
                                 />
                                 {errors.price && (
                                     <p className="text-red-500 text-sm">{errors.price.message}</p>
@@ -332,6 +336,7 @@ export default function EditCarForm({ car }: EditCarFormProps) {
                                     type="number"
                                     {...register("mileage", { valueAsNumber: true })}
                                     disabled={isSubmitting}
+                                    className="w-full"
                                 />
                                 {errors.mileage && (
                                     <p className="text-red-500 text-sm">{errors.mileage.message}</p>
@@ -346,6 +351,7 @@ export default function EditCarForm({ car }: EditCarFormProps) {
                                 {...register("color")}
                                 placeholder="e.g., White"
                                 disabled={isSubmitting}
+                                className="w-full"
                             />
                             {errors.color && (
                                 <p className="text-red-500 text-sm">{errors.color.message}</p>
@@ -369,7 +375,7 @@ export default function EditCarForm({ car }: EditCarFormProps) {
                                     onValueChange={(value) => setValue("fuelType", value)}
                                     disabled={isSubmitting}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="w-full">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -391,7 +397,7 @@ export default function EditCarForm({ car }: EditCarFormProps) {
                                     onValueChange={(value) => setValue("transmission", value)}
                                     disabled={isSubmitting}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="w-full">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -413,7 +419,7 @@ export default function EditCarForm({ car }: EditCarFormProps) {
                                     onValueChange={(value) => setValue("bodyType", value)}
                                     disabled={isSubmitting}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="w-full">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -438,6 +444,7 @@ export default function EditCarForm({ car }: EditCarFormProps) {
                                     type="number"
                                     {...register("seats", { valueAsNumber: true })}
                                     disabled={isSubmitting}
+                                    className="w-full"
                                 />
                                 {errors.seats && (
                                     <p className="text-red-500 text-sm">{errors.seats.message}</p>
@@ -453,6 +460,7 @@ export default function EditCarForm({ car }: EditCarFormProps) {
                                 rows={4}
                                 placeholder="Describe the car's features, condition, and any notable details..."
                                 disabled={isSubmitting}
+                                className="w-full"
                             />
                             {errors.description && (
                                 <p className="text-red-500 text-sm">{errors.description.message}</p>
@@ -476,7 +484,7 @@ export default function EditCarForm({ car }: EditCarFormProps) {
                                     onValueChange={(value) => setValue("status", value as "AVAILABLE" | "UNAVAILABLE" | "SOLD")}
                                     disabled={isSubmitting}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="w-full">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -497,7 +505,7 @@ export default function EditCarForm({ car }: EditCarFormProps) {
                                     onValueChange={(value) => setValue("featured", value === 'true')}
                                     disabled={isSubmitting}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="w-full">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -607,7 +615,7 @@ export default function EditCarForm({ car }: EditCarFormProps) {
                                     </p>
                                 </motion.div>
                             )}
-                        </AnimatePresence>
+                        </AnimatePresence> 
 
                         {/* Upload New Images */}
                         {totalImages < 10 && (

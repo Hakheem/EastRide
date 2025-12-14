@@ -3,7 +3,6 @@ import { auth } from "@/app/utils/auth";
 export default async function SuperAdminPage() {
     const session = await auth();
 
-    // Middleware already protects this route, no need for redirect
     console.log("📄 SuperAdmin Page - User Role:", (session?.user as any)?.role);
 
     return (

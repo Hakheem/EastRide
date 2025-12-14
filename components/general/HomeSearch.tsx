@@ -9,6 +9,8 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Skeleton } from '@/components/ui/skeleton'
+import { processCarImageSearch } from "../../app/actions/home";
+
 
 const HomeSearch = () => {
   const router = useRouter()
@@ -36,23 +38,50 @@ const HomeSearch = () => {
     }, 800)
   }
 
-  const handleImageSearch = (e: React.FormEvent) => {
-    e.preventDefault()
+ 
+const handleImageSearch = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (!searchImage) {
-      toast.error("Please upload an image first")
-      return
+  if (!searchImage) {
+    toast.error("Please upload an image first");
+    return;
+  }
+
+  setIsSearching(true);
+
+  try {
+    const result = await processCarImageSearch(searchImage);
+
+    if (!result.success || !result.data) {
+      toast.error(result.error ?? "Image search failed");
+      setIsSearching(false);
+      return;
     }
 
-    setIsSearching(true)
+    const { make, bodyType, color, confidence } = result.data;
 
-    console.log('Searching with image:', searchImage.name)
+    if (confidence < 0.4) {
+      toast.warning("Low confidence result. Showing best matches.");
+    } else {
+      toast.success("Car identified successfully");
+    }
 
-    setTimeout(() => {
-      toast.success('Image search completed')
-      setIsSearching(false)
-    }, 1500)
+    const params = new URLSearchParams();
+
+    if (make) params.set("make", make);
+    if (bodyType) params.set("bodyType", bodyType);
+    if (color) params.set("color", color);
+
+    router.push(`/cars?${params.toString()}`);
+  } catch (error) {
+    console.error(error);
+    toast.error("Something went wrong while searching");
+  } finally {
+    setIsSearching(false);
   }
+};
+
+
 
   const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
     onDrop: (acceptedFiles: File[]) => {
@@ -126,6 +155,8 @@ const HomeSearch = () => {
     fileInputRef.current?.click()
   }
 
+  
+
   return (
     <div>
       <form onSubmit={handleTextSubmit}>
@@ -138,7 +169,7 @@ const HomeSearch = () => {
             className="w-full px-4 py-5 pl-4 pr-48 border border-gray-300 dark:border-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800 dark:text-white disabled:opacity-50"
             disabled={isSearching}
           />
-
+ 
           <div className="absolute right-32">
             <Camera
               size={42} 

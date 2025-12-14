@@ -9,7 +9,7 @@ export default async function AdminPage() {
     console.log("📄 Admin Page - User Role:", userRole);
 
     return (
-        <div className="min-h-screen   ">
+        <div className="min-h-screen   "> 
           
         </div>
     )

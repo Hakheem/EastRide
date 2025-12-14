@@ -23,7 +23,7 @@ const WhyChooseUs = () => {
   ]
 
   return (
-    <div className='py-16 '>
+    <div className='py-24 '>
       <div className='mx-auto padded'>
         <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">
           Why Choose <span className='text-gradient'>EastRide?</span>

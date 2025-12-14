@@ -285,37 +285,70 @@ export const fuelTypes = ["Petrol", "Diesel", "Hybrid", "Electric", "LPG"];
 export const transmissionTypes = ["Automatic", "Manual", "Semi-Auto", "CVT"];
 
 // Body Types for Filters
-
 export const bodyTypes = [
   {
     name: "SUV",
-    image: "/gtr.png",
+    image: "https://images.unsplash.com/photo-1566470469039-0d4230c9c14b?w=800&h=600&fit=crop&crop=center",
   },
   {
     name: "Sedan",
-    image: "/gtr.png",
+    image: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=800&h=600&fit=crop&crop=center",
   },
   {
     name: "Hatchback",
-    image: "/gtr.png",
+    image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=800&h=600&fit=crop&crop=center",
   },
   {
-    name: "Pickup Truck",
-    image: "/gtr.png",
+    name: "Pickup", 
+    image: "https://images.unsplash.com/photo-1580274455191-1c62238fa333?w=800&h=600&fit=crop&crop=center",
   },
   {
-    name: "Luxury SUV",
-    image: "/gtr.png",
+    name: "Luxury SUV", 
+    image: "https://images.unsplash.com/photo-1614200187524-dc4b892acf16?w=800&h=600&fit=crop&crop=center",
   },
   {
     name: "Coupe",
-    image: "/gtr.png",
+    image: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=800&h=600&fit=crop&crop=center",
   },
   {
     name: "Minivan",
-    image: "/gtr.png",
+    image: "https://images.unsplash.com/photo-1570125669863-4f7d46c5d1e1?w=800&h=600&fit=crop&crop=center",
+  },
+  {
+    name: "Convertible",
+    image: "https://images.unsplash.com/photo-1614200187524-dc4b892acf16?w=800&h=600&fit=crop&crop=center",
+  },
+  {
+    name: "Wagon",
+    image: "https://images.unsplash.com/photo-1570125669863-4f7d46c5d1e1?w=800&h=600&fit=crop&crop=center",
+  },
+  {
+    name: "Van",
+    image: "https://images.unsplash.com/photo-1614200187524-dc4b892acf16?w=800&h=600&fit=crop&crop=center",
+  },
+  {
+    name: "Crossover",
+    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800&h=600&fit=crop&crop=center",
+  },
+  {
+    name: "Sports ",
+    image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop&crop=center",
+  },
+  {
+    name: "Luxury ", 
+    image: "https://images.unsplash.com/photo-1614200187524-dc4b892acf16?w=800&h=600&fit=crop&crop=center",
+  },
+  {
+    name: "Off-road ", 
+    image: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=800&h=600&fit=crop&crop=center",
+  },
+  {
+    name: "Compact Car",
+    image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=800&h=600&fit=crop&crop=center",
   },
 ];
+
+
 // Price Ranges (in KSH)
 export const priceRanges = [
   { label: "Under 1M", min: 0, max: 1000000 },
