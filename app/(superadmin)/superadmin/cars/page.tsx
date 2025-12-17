@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import CarsList from './_components/CarsList'
 import CarsTable from './_components/CarsTable'
 import { Card, CardContent } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import {getAllCars} from "../../../actions/cars"
+import { getAllCars } from "../../../actions/cars"
+import { Skeleton } from '@/components/ui/skeleton' // Add a skeleton component
 
 export const metadata = {
     title: "Cars | EastRide",
@@ -73,7 +74,7 @@ const CarsPage = async ({ searchParams = {} }: PageProps) => {
         status: car.status,
         featured: car.featured,
         images: car.images,
-        createdAt: car.createdAt.toISOString(), 
+        createdAt: car.createdAt.toISOString(),
     }))
 
     return (
@@ -87,7 +88,19 @@ const CarsPage = async ({ searchParams = {} }: PageProps) => {
 
             <Card>
                 <CardContent className="pt-6">
-                    <CarsList />
+                    {/* Wrap CarsList with Suspense */}
+                    <Suspense fallback={
+                        <div className="space-y-4">
+                            <Skeleton className="h-12 w-full" />
+                            <div className="flex gap-4">
+                                <Skeleton className="h-10 w-32" />
+                                <Skeleton className="h-10 w-32" />
+                                <Skeleton className="h-10 w-32" />
+                            </div>
+                        </div>
+                    }>
+                        <CarsList />
+                    </Suspense>
                     
                     {/* Cars Table Component */}
                     {transformedCars.length > 0 ? (

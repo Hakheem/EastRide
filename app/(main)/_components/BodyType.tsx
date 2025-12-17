@@ -31,38 +31,38 @@ const BodyType = () => {
         <div className="relative">
           <Swiper
             modules={[Pagination, Autoplay]}
-            pagination={{ 
-              clickable: true, 
+            pagination={{
+              clickable: true,
               dynamicBullets: true,
               el: '.body-type-pagination',
             }}
             loop={true}
-            autoplay={{ 
+            autoplay={{
               delay: 15000,
               disableOnInteraction: false,
               pauseOnMouseEnter: true
             }}
-            spaceBetween={16} 
-            slidesPerView={2} 
+            spaceBetween={16}
+            slidesPerView={2}
             breakpoints={{
-              640: { 
+              640: {
                 slidesPerView: 3,
                 spaceBetween: 18
               },
-              1024: { 
+              1024: {
                 slidesPerView: 5,
                 spaceBetween: 20
               },
-              1280: { 
+              1280: {
                 slidesPerView: 5,
                 spaceBetween: 20
               },
-              1536: { 
+              1536: {
                 slidesPerView: 5,
                 spaceBetween: 22
               },
             }}
-            className="pb-6" 
+            className="pb-6"
           >
             {bodyTypes.map((type) => (
               <SwiperSlide
@@ -70,27 +70,27 @@ const BodyType = () => {
                 className="rounded-lg overflow-hidden relative group"
               >
                 <Link href={`/cars?bodyType=${encodeURIComponent(type.name)}`}>
-                  <div className="relative w-full h-40 sm:h-44 md:h-48 overflow-hidden"> 
+                  <div className="relative w-full h-40 sm:h-44 md:h-48 overflow-hidden">
                     <Image
                       src={type.image}
                       alt={type.name}
                       fill
                       className="
-                        object-cover
+                        object-contain
                         transition-transform
                         duration-500
                         group-hover:scale-105
                       "
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16.67vw" 
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16.67vw"
                       priority={true}
                     />
 
-                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
 
                     <span
                       className="
                         absolute bottom-3 left-3 
-                        text-xs font-medium // Smaller text
+                        text-xs font-medium 
                         px-2 py-1
                         bg-white/70 dark:bg-gray-900/70
                         backdrop-blur-sm 

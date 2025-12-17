@@ -261,7 +261,7 @@ export function recordIPViolation(ip: string): void {
   }
 }
 
-// Clean up old IP reputations periodically
+// Clean up old IP reputations periodically 
 setInterval(() => {
   const now = Date.now();
   for (const [ip, reputation] of ipReputations.entries()) {

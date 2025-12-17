@@ -21,6 +21,9 @@ const grotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "EastRide",
   description: "EastRide — a modern and sleek car marketplace platform for East Africa, featuring clean design and easy browsing.",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -42,5 +45,4 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
-
 

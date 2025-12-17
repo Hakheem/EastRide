@@ -205,7 +205,7 @@ export function checkRateLimit(
   record.count++;
   return { allowed: true, remainingRequests: maxRequests - record.count };
 }
-
+ 
 // Clean up old entries periodically
 setInterval(() => {
   const now = Date.now();

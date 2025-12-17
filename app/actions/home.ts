@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { CarStatus } from "@prisma/client";
 import { rateLimit } from "@/lib/rate-limit";
 
-// Import SHARED utilities (from shared/car-utils)
+//  SHARED utilities
 import {
   priceRanges,
   formatPrice,
@@ -14,10 +14,10 @@ import {
   type CleanedCarDetails,
   type AIResponse,
   type CarData,
-  serializeCar, // ✅ Added this
+  serializeCar, 
 } from "@/lib/shared/car-utils";
 
-// Import SERVER-ONLY utilities (from car-utils)
+//  SERVER-ONLY utilities 
 import {
   cleanPriceString,
   cleanMileageString,

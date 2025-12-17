@@ -72,6 +72,87 @@ async function checkIPBeforeAction(actionName: string): Promise<{ allowed: boole
   return { allowed: true };
 }
 
+// Helper function to delay execution
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// AI Image Analysis with Retry Logic and Model Fallback
+async function analyzeCarImageWithAI(
+  imagePart: { inlineData: { data: string; mimeType: string } },
+  prompt: string,
+  maxRetries: number = 3
+): Promise<{ success: boolean; text?: string; error?: string }> {
+  
+  if (!process.env.GEMINI_API_KEY) {
+    return { success: false, error: "Gemini API key is not configured" };
+  }
+
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  
+  // Try models in order: gemini-2.5-flash first, then gemini-1.5-flash-latest as fallback
+  const modelsToTry = [
+    { name: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
+    { name: "gemini-1.5-flash-latest", label: "Gemini 1.5 Flash" },
+    { name: "gemini-1.5-pro-latest", label: "Gemini 1.5 Pro" } // Last resort
+  ];
+
+  for (const modelConfig of modelsToTry) {
+    console.log(`🤖 Trying ${modelConfig.label}...`);
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const model = genAI.getGenerativeModel({ model: modelConfig.name });
+        const result = await model.generateContent([imagePart, prompt]);
+        const response = await result.response;
+        const text = response.text();
+        
+        console.log(`✅ Successfully analyzed with ${modelConfig.label} (attempt ${attempt})`);
+        return { success: true, text };
+        
+      } catch (error: any) {
+        const errorMessage = error?.message || String(error);
+        const isOverloaded = errorMessage.includes('503') || 
+                           errorMessage.includes('overloaded') || 
+                           errorMessage.includes('Service Unavailable');
+        
+        const isRateLimit = errorMessage.includes('429') || 
+                           errorMessage.includes('quota') || 
+                           errorMessage.includes('rate limit');
+
+        console.log(`⚠️ ${modelConfig.label} attempt ${attempt}/${maxRetries} failed: ${errorMessage.substring(0, 100)}`);
+
+        // If it's an overload or rate limit error and we have retries left
+        if ((isOverloaded || isRateLimit) && attempt < maxRetries) {
+          // Exponential backoff: 2s, 4s, 8s
+          const delayMs = Math.pow(2, attempt) * 1000;
+          console.log(`⏳ Waiting ${delayMs}ms before retry...`);
+          await delay(delayMs);
+          continue;
+        }
+
+        // If this was the last retry for this model, try next model
+        if (attempt === maxRetries) {
+          console.log(`❌ ${modelConfig.label} failed after ${maxRetries} attempts`);
+          break; // Move to next model
+        }
+
+        // For non-overload errors, don't retry this model
+        if (!isOverloaded && !isRateLimit) {
+          console.log(`❌ ${modelConfig.label} encountered non-retryable error: ${errorMessage}`);
+          break; // Move to next model
+        }
+      }
+    }
+  }
+
+  // If all models failed
+  return {
+    success: false,
+    error: "All AI models are currently unavailable. This usually means the services are experiencing high traffic. Please try again in a few minutes."
+  };
+}
+
 // 1. AI Image Analysis Function (with image validation and security)
 export async function processCarImageWithAI(file: File): Promise<AIResponse> {
   try {
@@ -99,8 +180,6 @@ export async function processCarImageWithAI(file: File): Promise<AIResponse> {
       throw new Error("Gemini API key is not configured");
     }
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     const base64Image = await fileToBase64(file);
 
     const imagePart = {
@@ -143,9 +222,17 @@ For confidence, provide a value between 0 and 1 representing how confident you a
 ONLY respond with the JSON object, nothing else.
 `;
 
-    const result = await model.generateContent([imagePart, prompt]);
-    const response = await result.response;
-    const text = response.text();
+    console.log(`🔍 Starting AI analysis of car image...`);
+    const aiResult = await analyzeCarImageWithAI(imagePart, prompt);
+
+    if (!aiResult.success || !aiResult.text) {
+      return {
+        success: false,
+        error: aiResult.error || "Failed to analyze image with AI"
+      };
+    }
+
+    const text = aiResult.text;
     const cleanedText = text.replace(/```(?:json)?\n?/g, '').trim();
 
     try {
@@ -180,6 +267,7 @@ ONLY respond with the JSON object, nothing else.
         mileage: cleanMileageString(rawCarDetails.mileage)
       };
 
+      console.log(`✅ AI analysis completed successfully`);
       return {
         success: true,
         data: cleanedCarDetails

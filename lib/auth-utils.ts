@@ -101,7 +101,7 @@ export async function isSuperAdmin() {
 
 /**
  * Check if user is authenticated
- * Returns boolean without redirecting
+ * Returns boolean without redirecting 
  */
 export async function isAuthenticated() {
   const session = await auth();

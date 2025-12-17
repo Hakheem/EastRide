@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function getAllUsersWithDetails() {
   const session = await requireSuperAdmin();
-
+ 
   try {
     const users = await prisma.user.findMany({
       select: {

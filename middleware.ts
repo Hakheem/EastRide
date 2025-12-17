@@ -93,6 +93,20 @@ export async function middleware(req: NextRequest) {
     return applySecurityHeaders(response, req);
   }
 
+  // Redirect /admin to /admin/dashboard
+  if (nextUrl.pathname === "/admin" && isLoggedIn) {
+    if (userRole === "ADMIN" || userRole === "SUPERADMIN") {
+      return NextResponse.redirect(new URL("/admin/dashboard", nextUrl));
+    }
+  }
+
+  // Redirect /superadmin to /superadmin/dashboard
+  if (nextUrl.pathname === "/superadmin" && isLoggedIn) {
+    if (userRole === "SUPERADMIN") {
+      return NextResponse.redirect(new URL("/superadmin/dashboard", nextUrl));
+    }
+  }
+
   // Protect admin routes - redirect to login if not authenticated or not admin
   if (nextUrl.pathname.startsWith("/admin")) {
     if (!isLoggedIn) {
@@ -121,9 +135,9 @@ export async function middleware(req: NextRequest) {
   if (nextUrl.pathname === "/") {
     if (isLoggedIn) {
       if (userRole === "SUPERADMIN") {
-        return NextResponse.redirect(new URL("/superadmin", nextUrl));
+        return NextResponse.redirect(new URL("/superadmin/dashboard", nextUrl));
       } else if (userRole === "ADMIN") {
-        return NextResponse.redirect(new URL("/admin", nextUrl));
+        return NextResponse.redirect(new URL("/admin/dashboard", nextUrl));
       }
     }
   }
@@ -141,3 +155,4 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };
+

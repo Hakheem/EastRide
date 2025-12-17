@@ -1,5 +1,4 @@
 
-// FAQ Data
 export const faqs = [
   {
     id: 1,
@@ -30,192 +29,6 @@ export const faqs = [
     id: 6,
     question: "How do I list my car for sale?",
     answer: "Listing is free! Click 'Sell Your Car' on our homepage, upload photos, provide vehicle details, and set your price. We recommend including at least 10 photos from different angles. Once submitted, our team verifies the information before the listing goes live (usually within 24 hours)."
-  }
-];
-
-// Featured Cars Data
-export const featuredCars = [
-  {
-    id: 1,
-    name: "Toyota Land Cruiser V8",
-    make: "Toyota",
-    model: "Land Cruiser",
-    year: 2022,
-    price: 8500000, // KSH
-    mileage: 18000,
-    transmission: "Automatic",
-    fuelType: "Diesel",
-    bodyType: "SUV",
-    color: "Pearl White",
-    wishListed: true,
-    images: [
-      "/hero_1.png",
-      "/hero_2.png",
-      "/hero_3.png"
-    ],
-    features: ["4WD", "Leather Seats", "Sunroof", "Navigation", "Heated Seats"],
-    location: "Nairobi",
-    rating: 4.8,
-    sellerType: "Dealer"
-  },
-  {
-    id: 2,
-    name: "Mercedes-Benz C200",
-    make: "Mercedes-Benz",
-    model: "C-Class",
-    year: 2021,
-    price: 5200000,
-    mileage: 25000,
-    transmission: "Automatic",
-    fuelType: "Petrol",
-    bodyType: "Sedan",
-    color: "Obsidian Black",
-    wishListed: false,
-    images: [
-      "/hero_4.png",
-      "/gtr.png"
-    ],
-    features: ["Premium Package", "Panoramic Roof", "Burmester Sound", "LED Headlights"],
-    location: "Mombasa",
-    rating: 4.6,
-    sellerType: "Private"
-  },
-  {
-    id: 3,
-    name: "Mitsubishi Pajero Sport",
-    make: "Mitsubishi",
-    model: "Pajero Sport",
-    year: 2020,
-    price: 4200000,
-    mileage: 45000,
-    transmission: "Automatic",
-    fuelType: "Diesel",
-    bodyType: "SUV",
-    color: "Titanium Gray",
-    wishListed: true,
-    images: [
-      "/hero_1.png",
-      "/hero_2.png",
-      "/hero_3.png",
-      "/hero_4.png"
-    ],
-    features: ["7 Seater", "Off-road Mode", "Rear AC", "Tow Package"],
-    location: "Kampala",
-    rating: 4.5,
-    sellerType: "Dealer"
-  },
-  {
-    id: 4,
-    name: "Subaru Forester XT",
-    make: "Subaru",
-    model: "Forester",
-    year: 2019,
-    price: 3800000,
-    mileage: 60000,
-    transmission: "Automatic",
-    fuelType: "Petrol",
-    bodyType: "SUV",
-    color: "Marine Blue",
-    wishListed: false,
-    images: [
-      "/hero_1.png",
-      "/hero_2.png"
-    ],
-    features: ["Symmetrical AWD", "Eyesight Safety", "Apple CarPlay", "Roof Rails"],
-    location: "Dar es Salaam",
-    rating: 4.7,
-    sellerType: "Private"
-  },
-  {
-    id: 5,
-    name: "Volkswagen Golf GTI",
-    make: "Volkswagen",
-    model: "Golf",
-    year: 2021,
-    price: 3200000,
-    mileage: 22000,
-    transmission: "Manual",
-    fuelType: "Petrol",
-    bodyType: "Hatchback",
-    color: "Tornado Red",
-    wishListed: true,
-    images: [
-      "/gtr.png",
-      "/hero_2.png",
-      "/Benz-E53.png"
-    ],
-    features: ["Sport Suspension", "Paddle Shifters", "Premium Audio", "LED DRLs"],
-    location: "Nairobi",
-    rating: 4.9,
-    sellerType: "Dealer"
-  },
-  {
-    id: 6,
-    name: "Isuzu D-Max",
-    make: "Isuzu",
-    model: "D-Max",
-    year: 2022,
-    price: 4800000,
-    mileage: 15000,
-    transmission: "Manual",
-    fuelType: "Diesel",
-    bodyType: "Pickup Truck",
-    color: "Silver Metallic",
-    wishListed: false,
-    images: [
-      "/hero_1.png",
-      "/mustang.png"
-    ],
-    features: ["4x4", "Double Cab", "Canopy", "Reverse Camera", "Bluetooth"],
-    location: "Arusha",
-    rating: 4.4,
-    sellerType: "Private"
-  },
-  {
-    id: 7,
-    name: "Range Rover Sport",
-    make: "Land Rover",
-    model: "Range Rover Sport",
-    year: 2020,
-    price: 12500000,
-    mileage: 35000,
-    transmission: "Automatic",
-    fuelType: "Diesel",
-    bodyType: "Luxury SUV",
-    color: "Santorini Black",
-    wishListed: true,
-    images: [
-      "/hero_1.png",
-      "/hero_2.png",
-      "/hero_3.png",
-      "/hero_4.png"
-    ],
-    features: ["Terrain Response", "Meridian Sound", "Massage Seats", "HUD Display"],
-    location: "Nairobi",
-    rating: 4.8,
-    sellerType: "Dealer"
-  },
-  {
-    id: 8,
-    name: "Honda Civic Type R",
-    make: "Honda",
-    model: "Civic",
-    year: 2021,
-    price: 4500000,
-    mileage: 18000,
-    transmission: "Manual",
-    fuelType: "Petrol",
-    bodyType: "Hatchback",
-    color: "Championship White",
-    wishListed: false,
-    images: [
-      "/gtr.png",
-      "/her0-1.png"
-    ],
-    features: ["Sport Mode", "Recaro Seats", "Brembo Brakes", "Triple Exhaust"],
-    location: "Mombasa",
-    rating: 4.9,
-    sellerType: "Private"
   }
 ];
 
@@ -275,81 +88,39 @@ export const carBrands = [
   }
 ];
 
-//  original array for filters if needed
 export const carBrandsList = carBrands.map(b => b.brand);
 
-// Fuel Types for Filters
 export const fuelTypes = ["Petrol", "Diesel", "Hybrid", "Electric", "LPG"];
 
-// Transmission Types for Filters
 export const transmissionTypes = ["Automatic", "Manual", "Semi-Auto", "CVT"];
 
 // Body Types for Filters
 export const bodyTypes = [
-  {
-    name: "SUV",
-    image: "https://images.unsplash.com/photo-1566470469039-0d4230c9c14b?w=800&h=600&fit=crop&crop=center",
-  },
-  {
-    name: "Sedan",
-    image: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=800&h=600&fit=crop&crop=center",
-  },
-  {
-    name: "Hatchback",
-    image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=800&h=600&fit=crop&crop=center",
-  },
-  {
-    name: "Pickup", 
-    image: "https://images.unsplash.com/photo-1580274455191-1c62238fa333?w=800&h=600&fit=crop&crop=center",
-  },
-  {
-    name: "Luxury SUV", 
-    image: "https://images.unsplash.com/photo-1614200187524-dc4b892acf16?w=800&h=600&fit=crop&crop=center",
-  },
-  {
-    name: "Coupe",
-    image: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=800&h=600&fit=crop&crop=center",
-  },
-  {
-    name: "Minivan",
-    image: "https://images.unsplash.com/photo-1570125669863-4f7d46c5d1e1?w=800&h=600&fit=crop&crop=center",
-  },
-  {
-    name: "Convertible",
-    image: "https://images.unsplash.com/photo-1614200187524-dc4b892acf16?w=800&h=600&fit=crop&crop=center",
-  },
-  {
-    name: "Wagon",
-    image: "https://images.unsplash.com/photo-1570125669863-4f7d46c5d1e1?w=800&h=600&fit=crop&crop=center",
-  },
-  {
-    name: "Van",
-    image: "https://images.unsplash.com/photo-1614200187524-dc4b892acf16?w=800&h=600&fit=crop&crop=center",
-  },
-  {
-    name: "Crossover",
-    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800&h=600&fit=crop&crop=center",
-  },
-  {
-    name: "Sports ",
-    image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop&crop=center",
-  },
-  {
-    name: "Luxury ", 
-    image: "https://images.unsplash.com/photo-1614200187524-dc4b892acf16?w=800&h=600&fit=crop&crop=center",
-  },
-  {
-    name: "Off-road ", 
-    image: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=800&h=600&fit=crop&crop=center",
-  },
-  {
-    name: "Compact Car",
-    image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=800&h=600&fit=crop&crop=center",
-  },
+  { name: "SUV", image: "/suv_body.png" },
+  { name: "Sedan", image: "/sedan_body.png" },
+  { name: "Hatchback", image: "/hatchback_body.png" },
+  { name: "Coupe", image: "/coupe_body.png" },
+  { name: "Coupe SUV", image: "/suv_coupe_body.png" },
+  { name: "Convertible", image: "/convertible_body.png" },
+  { name: "Muscle", image: "/muscle_body.png" },
+  { name: "Wagon", image: "/wagon_body.png" },
+  { name: "Pickup", image: "/pickup_body.png" },
+  { name: "Minivan", image: "/minivan_body.png" },
+  { name: "Van", image: "/van_body.png" },
+  { name: "Crossover", image: "/crossover_body.png" },
+  { name: "Sports", image: "/sports_body.png" },
+  { name: "Hyper", image: "/hyper_body.png" },
+  { name: "Luxury", image: "/luxury_body.png" },
+  { name: "Luxury SUV", image: "/luxury_suv_body.png" },
+  { name: "Off-road", image: "/offroad_body.png" },
+  { name: "Compact Car", image: "/compact_car_body.png" },
+  { name: "Limousine", image: "/limousine_body.png" },
+  { name: "Micro", image: "/micro_body.png" },
+  { name: "MPV", image: "/mpv_body.png" },
 ];
 
 
-// Price Ranges (in KSH)
+
 export const priceRanges = [
   { label: "Under 1M", min: 0, max: 1000000 },
   { label: "1M - 3M", min: 1000000, max: 3000000 },
@@ -358,7 +129,6 @@ export const priceRanges = [
   { label: "Over 10M", min: 10000000, max: 999999999 }
 ];
 
-// Helper function to format price
 export function formatPrice(price: number, currency: string = "KSH"): string {
   if (price >= 1000000) {
     return `${currency} ${(price / 1000000).toFixed(1)}M`;
@@ -368,15 +138,7 @@ export function formatPrice(price: number, currency: string = "KSH"): string {
   return `${currency} ${price}`;
 }
 
-// Helper function to get car by ID
-export function getCarById(id: number) {
-  return featuredCars.find(car => car.id === id);
-}
 
-// Helper function to get wishlisted cars
-export function getWishlistedCars() {
-  return featuredCars.filter(car => car.wishListed);
-}
 
 // Testimonials data
 export const testimonials = [
@@ -405,4 +167,3 @@ export const testimonials = [
     date: "2024-03-05"
   }
 ];
-

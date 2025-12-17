@@ -61,12 +61,12 @@ const AddCarForm = () => {
   }
 
   return (
-    <div className="container mx-auto max-w-6xl px-4">
+    <div className="mb-6 mx-auto">
       <Tabs 
         defaultValue="manual" 
         value={activeTab} 
         onValueChange={setActiveTab} 
-        className="mt-6"
+        className=""
       >
         <TabsList className='w-full grid grid-cols-2 mx-auto'>
           <TabsTrigger 

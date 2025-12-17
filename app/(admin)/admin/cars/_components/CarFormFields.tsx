@@ -19,20 +19,25 @@ const BODY_TYPES = [
   { value: 'Sedan', label: 'Sedan' },
   { value: 'Hatchback', label: 'Hatchback' },
   { value: 'Coupe', label: 'Coupe' },
+  { value: 'Coupe SUV', label: 'Coupe SUV' },
   { value: 'Convertible', label: 'Convertible' },
+  { value: 'Muscle', label: 'Muscle' },
   { value: 'Wagon', label: 'Wagon' },
-  { value: 'Pickup', label: 'Pickup' },
+  { value: 'Pickup', label: 'Pick-up' },
   { value: 'Minivan', label: 'Minivan' },
   { value: 'Van', label: 'Van' },
   { value: 'Crossover', label: 'Crossover' },
   { value: 'Sports', label: 'Sports Car ' },
+  { value: 'Hyper', label: 'Hyper Car ' },
   { value: 'Luxury', label: 'Luxury ' }, 
   { value: 'Luxury SUV', label: 'Luxury SUV' }, 
   { value: 'Off-road', label: 'Off-road ' },
   { value: 'Compact Car', label: 'Compact Car' },
+  { value: 'Limousine', label: 'Limousine' },
+  { value: 'Micro', label: 'Micro' },
+  { value: 'MPV', label: 'MPV' },
 ] as const;
 
-// Fuel Types Array (Aligned with your schema - these are stored as Strings in Car model)
 const FUEL_TYPES = [
   { value: 'Petrol', label: 'Petrol' },
   { value: 'Diesel', label: 'Diesel' },
