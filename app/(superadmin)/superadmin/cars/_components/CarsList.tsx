@@ -8,7 +8,6 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useState, useEffect, useCallback } from 'react'
 
-
 const CarsList = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -67,7 +66,7 @@ const CarsList = () => {
     }
   }
 
-  return (
+  return ( 
     <div>
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 w-full">
         <form onSubmit={handleSearchSubmit} className="w-full sm:w-auto flex-1">
@@ -117,3 +116,4 @@ const CarsList = () => {
 }
 
 export default CarsList
+

@@ -308,7 +308,7 @@ export default function CarsTable({ cars, pagination, searchParams }: CarsTableP
                                                         </DropdownMenuItem>
                                                         <DropdownMenuItem 
                                                             onClick={() => handleStatusUpdate(car.id, "UNAVAILABLE")}
-                                                            disabled={updatingStatus === car.id || car.status === "UNAVAILABLE"}
+                                                            disabled={updatingStatus === car.id || car.status ===  "UNAVAILABLE"}
                                                             className="cursor-pointer"
                                                         >
                                                             <XCircle className="mr-2 h-4 w-4 text-yellow-600" />

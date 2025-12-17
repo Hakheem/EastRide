@@ -176,7 +176,7 @@ export default function CarsTable({ cars, pagination, searchParams }: CarsTableP
             setUpdatingStatus(null)
         }
     }
-
+ 
     return (
         <TooltipProvider>
             <div className="mt-6">
