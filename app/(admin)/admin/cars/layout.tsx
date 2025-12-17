@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-    title: "Admin Cars | EastRide",
+    title: "Cars | EastRide Admin",
     description: "Manage cars available in your dealership's inventory.",
 }
 
-export default function CarsLayout({
+export default function AdminCarsLayout({
     children,
 }: {
     children: React.ReactNode

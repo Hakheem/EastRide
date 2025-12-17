@@ -1,4 +1,3 @@
-// app/(admin)/superadmin/cars/[id]/page.tsx
 import React from 'react'
 import { notFound } from 'next/navigation'
 import { getCarById } from '@/app/actions/cars'
