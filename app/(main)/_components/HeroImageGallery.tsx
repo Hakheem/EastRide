@@ -2,22 +2,23 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Skeleton } from '@/components/ui/skeleton' // Make sure to import your Skeleton
-import { Car } from 'lucide-react' // Add car icon
+import { Skeleton } from '@/components/ui/skeleton'
+import { Car } from 'lucide-react' 
 
 interface HeroImageGalleryProps {
   intervalMinutes?: number 
 }
 
 const carImages = [
-  '/hero_1.png',
-  '/hero_2.png',
-  '/hero_3.png',
-  '/hero_4.png',
   '/gtr.png',
+  '/rr.png',
+  '/corvette.png',
+  '/mustang.png',
+  '/jeep_black.png',
+  '/bmw_blue.png',
 ]
 
-export default function HeroImageGallery({ intervalMinutes = 0.75 }: HeroImageGalleryProps) { // 0.75 minutes = 45 seconds
+export default function HeroImageGallery({ intervalMinutes = 0.50 }: HeroImageGalleryProps) { 
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isMounted, setIsMounted] = useState(false)
 
@@ -28,7 +29,7 @@ export default function HeroImageGallery({ intervalMinutes = 0.75 }: HeroImageGa
   useEffect(() => {
     if (!isMounted) return
 
-    const intervalMs = intervalMinutes * 60 * 1000 // 45 seconds
+    const intervalMs = intervalMinutes * 60 * 1000
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => 
         (prevIndex + 1) % carImages.length
@@ -59,13 +60,10 @@ export default function HeroImageGallery({ intervalMinutes = 0.75 }: HeroImageGa
             <Car className="h-12 w-12 text-primary dark:text-primary-foreground" />
           </motion.div>
           
-          {/* Text skeleton */}
-          <Skeleton className="h-4 w-32 mb-2" />
-          <Skeleton className="h-3 w-24" />
           
           {/* Image area skeleton */}
           <div className="mt-6 w-full">
-            <Skeleton className="h-48 w-full rounded-lg" />
+            <Skeleton className="h-48 w-full rounded" />
           </div>
         </div>
       </div>
@@ -73,7 +71,7 @@ export default function HeroImageGallery({ intervalMinutes = 0.75 }: HeroImageGa
   }
 
   return (
-    <div className="relative h-[300px] lg:max-h-[80vh] lg:h-full w-full overflow-hidden">
+    <div className="relative h-[300px] lg:max-h-[80vh] lg:h-full bg-transparent w-full overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentImageIndex}

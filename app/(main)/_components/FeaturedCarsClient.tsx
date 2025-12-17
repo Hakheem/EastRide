@@ -16,15 +16,15 @@ type FeaturedCarsClientProps = {
 };
 
 export default function FeaturedCarsClient({
-  featuredCars,
+  featuredCars, 
 }: FeaturedCarsClientProps) {
   const [isHovering, setIsHovering] = useState(false);
-
+ 
   return (
-    <div className="py-12 lg:mt-8 padded">
+    <div className=" py-12 md:py-16  lg:mt-8 padded">
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Newly Featured Cars
+           Featured Cars
         </h2>
         <Button variant="outline" className="text-sm p-0" asChild>
           <Link href="/cars">

@@ -5,22 +5,35 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-utils";
 import { revalidatePath } from "next/cache";
 import { CarStatus } from "@prisma/client";
+import { headers } from "next/headers";
 
-// Import utilities from separate file
+// Import SHARED utilities (from shared/car-utils)
 import {
   priceRanges,
   formatPrice,
+  type RawCarDetails,
+  type CleanedCarDetails,
+  type AIResponse,
+  type CarData,
+} from "@/lib/shared/car-utils";
+
+// Import SERVER-ONLY utilities (from car-utils)
+import {
   cleanPriceString,
   cleanMileageString,
   fileToBase64,
   validateImageFile,
   uploadToCloudinary,
   deleteCarImages,
-  type RawCarDetails,
-  type CleanedCarDetails,
-  type AIResponse,
-  type CarData,
 } from "@/lib/car-utils";
+
+// Import SECURITY utilities
+import { 
+  validateCarListingContent, 
+  checkForSpam,
+  checkIPReputation,
+  recordIPViolation 
+} from "@/lib/security/shield-protection";
 
 // Ensure environment variables are loaded
 if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
@@ -31,11 +44,51 @@ if (!process.env.GEMINI_API_KEY) {
   console.warn("⚠️ Gemini API key is not configured");
 }
 
-// 1. AI Image Analysis Function (with image validation)
+// Helper to get IP address from headers
+async function getClientIP(): Promise<string> {
+  const headersList = await headers();
+  return headersList.get("x-forwarded-for")?.split(",")[0].trim() || 
+         headersList.get("x-real-ip") || 
+         "unknown";
+}
+
+// Helper to check IP reputation before expensive operations
+async function checkIPBeforeAction(actionName: string): Promise<{ allowed: boolean; reason?: string }> {
+  const ip = await getClientIP();
+  const ipReputation = checkIPReputation(ip);
+  
+  if (ipReputation.blocked) {
+    console.log(`🚫 Blocked IP attempting ${actionName}: ${ip} (${ipReputation.violations} violations)`);
+    return { 
+      allowed: false, 
+      reason: "Your IP has been temporarily blocked due to suspicious activity. Please try again later." 
+    };
+  }
+
+  if (ipReputation.shouldWarn) {
+    console.log(`⚠️ Warning: IP ${ip} has ${ipReputation.violations} violations attempting ${actionName}`);
+  }
+
+  return { allowed: true };
+}
+
+// 1. AI Image Analysis Function (with image validation and security)
 export async function processCarImageWithAI(file: File): Promise<AIResponse> {
   try {
+    // Security check
+    const ipCheck = await checkIPBeforeAction("AI image processing");
+    if (!ipCheck.allowed) {
+      return {
+        success: false,
+        error: ipCheck.reason || "Access denied"
+      };
+    }
+
     const validation = validateImageFile(file);
     if (!validation.valid) {
+      const ip = await getClientIP();
+      recordIPViolation(ip);
+      console.log(`⚠️ Invalid image upload attempt from ${ip}: ${validation.error}`);
       return {
         success: false,
         error: validation.error
@@ -147,13 +200,24 @@ ONLY respond with the JSON object, nothing else.
   }
 }
 
-// 2. ADD Car - Create new car with multiple images
+// 2. ADD Car - Create new car with multiple images (with content validation)
 export async function addNewCar({ carData, images }: { carData: CarData, images: File[] }) {
   try {
-    const session = await requireAdmin();
-    
-    console.log(`✅ User ${session.user?.email} (${(session.user as any)?.role}) is adding a new car`);
+    // Security check
+    const ipCheck = await checkIPBeforeAction("add car");
+    if (!ipCheck.allowed) {
+      return {
+        success: false,
+        error: ipCheck.reason || "Access denied"
+      };
+    }
 
+    const session = await requireAdmin();
+    const ip = await getClientIP();
+    
+    console.log(`✅ User ${session.user?.email} (${(session.user as any)?.role}) is adding a new car from IP ${ip}`);
+
+    // Validation checks
     const requiredFields = ["make", "model", "year", "price", "mileage", "color", "fuelType", "transmission", "bodyType"];
     const missingFields = requiredFields.filter(field => !carData[field as keyof CarData]);
 
@@ -162,6 +226,33 @@ export async function addNewCar({ carData, images }: { carData: CarData, images:
         success: false,
         error: `Missing required fields: ${missingFields.join(", ")}`
       };
+    }
+
+    // CONTENT VALIDATION - Check description for malicious content
+    if (carData.description) {
+      const contentValidation = validateCarListingContent(carData.description);
+      if (!contentValidation.valid) {
+        recordIPViolation(ip);
+        console.log(`⚠️ Suspicious content detected in car description from ${ip}: ${contentValidation.issues?.join(", ")}`);
+        return {
+          success: false,
+          error: "Invalid content detected in description. Please remove any scripts or suspicious content."
+        };
+      }
+
+      // SPAM CHECK
+      const spamCheck = checkForSpam(carData.description);
+      if (spamCheck.isSpam) {
+        recordIPViolation(ip);
+        console.log(`⚠️ Spam detected in car listing from ${ip}: ${spamCheck.reasons?.join(", ")}`);
+        return {
+          success: false,
+          error: "Your listing appears to contain spam. Please provide a genuine car description."
+        };
+      }
+
+      // Use sanitized description
+      carData.description = contentValidation.sanitized;
     }
 
     if (carData.year < 1900 || carData.year > new Date().getFullYear() + 1) {
@@ -213,30 +304,73 @@ export async function addNewCar({ carData, images }: { carData: CarData, images:
       };
     }
 
-    const imageUrls: string[] = [];
-    
+    // Validate all images first before uploading
     for (const image of images) {
       const validation = validateImageFile(image);
       if (!validation.valid) {
+        recordIPViolation(ip);
         return {
           success: false,
           error: validation.error
         };
       }
-
-      try {
-        const cloudinaryUrl = await uploadToCloudinary(image);
-        imageUrls.push(cloudinaryUrl);
-        console.log(`✅ Image uploaded to Cloudinary: ${cloudinaryUrl}`);
-      } catch (error) {
-        console.error("Failed to upload image:", error);
-        return {
-          success: false,
-          error: `Failed to upload image ${image.name}`
-        };
-      }
     }
 
+    // Upload images with better error handling
+    const imageUrls: string[] = [];
+    const uploadedUrls: string[] = []; // Track for cleanup on error
+    
+    console.log(`📤 Starting upload of ${images.length} image(s)...`);
+    
+    try {
+      for (let i = 0; i < images.length; i++) {
+        const image = images[i];
+        console.log(`📤 Uploading image ${i + 1}/${images.length}: ${image.name}`);
+        
+        try {
+          const cloudinaryUrl = await uploadToCloudinary(image);
+          imageUrls.push(cloudinaryUrl);
+          uploadedUrls.push(cloudinaryUrl);
+          console.log(`✅ Image ${i + 1}/${images.length} uploaded successfully`);
+        } catch (uploadError: any) {
+          console.error(`❌ Failed to upload image ${i + 1}/${images.length}:`, uploadError);
+          
+          // Cleanup already uploaded images
+          if (uploadedUrls.length > 0) {
+            console.log(`🧹 Cleaning up ${uploadedUrls.length} already uploaded image(s)...`);
+            await deleteCarImages(uploadedUrls).catch(cleanupError => {
+              console.error("Error during cleanup:", cleanupError);
+            });
+          }
+          
+          return {
+            success: false,
+            error: `Failed to upload image "${image.name}": ${uploadError.message || 'Connection timeout or network error. Please check your internet connection and try again.'}`
+          };
+        }
+      }
+      
+      console.log(`✅ All ${images.length} image(s) uploaded successfully`);
+      
+    } catch (error: any) {
+      console.error("Unexpected error during image upload:", error);
+      
+      // Cleanup any uploaded images
+      if (uploadedUrls.length > 0) {
+        await deleteCarImages(uploadedUrls).catch(cleanupError => {
+          console.error("Error during cleanup:", cleanupError);
+        });
+      }
+      
+      return {
+        success: false,
+        error: "An unexpected error occurred during image upload. Please try again."
+      };
+    }
+
+    // Create car in database
+    console.log(`💾 Creating car record in database...`);
+    
     const car = await prisma.car.create({
       data: {
         make: carData.make,
@@ -316,7 +450,7 @@ export async function getAllCars(
     if (filters?.make) whereClause.make = { contains: filters.make, mode: 'insensitive' };
     
     if (filters?.priceRange) {
-      const range = priceRanges.find(r => r.label === filters.priceRange);
+    const range = priceRanges.find((r: { label: string; min: number; max: number }) => r.label === filters.priceRange);
       if (range) {
         whereClause.price = {
           gte: range.min,
@@ -371,6 +505,7 @@ export async function getAllCars(
 // 4. GET Single Car
 export async function getCarById(carId: string) {
   try {
+    // First, get the car
     const car = await prisma.car.findUnique({
       where: { id: carId },
       include: {
@@ -390,9 +525,39 @@ export async function getCarById(carId: string) {
       };
     }
 
+    // Get dealership information (assuming you have only one dealership)
+    const dealershipInfo = await prisma.dealershipInfo.findFirst({
+      include: {
+        workingHours: {
+          orderBy: {
+            dayOfWeek: 'asc' // Sort by day of week
+          }
+        }
+      }
+    });
+
+    // Format the dealership data
+    const dealership = dealershipInfo ? {
+      name: dealershipInfo.name,
+      address: dealershipInfo.address,
+      phone: dealershipInfo.phone,
+      email: dealershipInfo.email,
+      hours: dealershipInfo.workingHours.reduce((acc: any, hour) => {
+        // Convert DayOfWeek enum to lowercase string for display
+        const dayName = hour.dayOfWeek.toLowerCase();
+        acc[dayName] = hour.isOpen 
+          ? `${hour.openTime} - ${hour.closeTime}`
+          : 'Closed';
+        return acc;
+      }, {})
+    } : null;
+
     return {
       success: true,
-      data: car
+      data: {
+        ...car,
+        dealership 
+      }
     };
   } catch (error) {
     console.error("Error fetching car:", error);
@@ -403,7 +568,7 @@ export async function getCarById(carId: string) {
   }
 }
 
-// 5. UPDATE Car
+// 5. UPDATE Car (with content validation)
 export async function updateCar(
   carId: string, 
   carData: Partial<CarData>, 
@@ -411,7 +576,17 @@ export async function updateCar(
   imagesToDelete?: string[]
 ) {
   try {
+    // Security check
+    const ipCheck = await checkIPBeforeAction("update car");
+    if (!ipCheck.allowed) {
+      return {
+        success: false,
+        error: ipCheck.reason || "Access denied"
+      };
+    }
+
     await requireAdmin();
+    const ip = await getClientIP();
     
     const existingCar = await prisma.car.findUnique({
       where: { id: carId }
@@ -422,6 +597,33 @@ export async function updateCar(
         success: false,
         error: "Car not found"
       };
+    }
+
+    // CONTENT VALIDATION - Check description if being updated
+    if (carData.description) {
+      const contentValidation = validateCarListingContent(carData.description);
+      if (!contentValidation.valid) {
+        recordIPViolation(ip);
+        console.log(`⚠️ Suspicious content detected in car update from ${ip}: ${contentValidation.issues?.join(", ")}`);
+        return {
+          success: false,
+          error: "Invalid content detected in description. Please remove any scripts or suspicious content."
+        };
+      }
+
+      // SPAM CHECK
+      const spamCheck = checkForSpam(carData.description);
+      if (spamCheck.isSpam) {
+        recordIPViolation(ip);
+        console.log(`⚠️ Spam detected in car update from ${ip}: ${spamCheck.reasons?.join(", ")}`);
+        return {
+          success: false,
+          error: "Your description appears to contain spam. Please provide a genuine car description."
+        };
+      }
+
+      // Use sanitized description
+      carData.description = contentValidation.sanitized;
     }
     
     let imageUrls = [...existingCar.images];
@@ -452,6 +654,7 @@ export async function updateCar(
       for (const image of newImages) {
         const validation = validateImageFile(image);
         if (!validation.valid) {
+          recordIPViolation(ip);
           return {
             success: false,
             error: validation.error
@@ -532,6 +735,15 @@ export async function updateCar(
 // 6. DELETE Car
 export async function deleteCar(carId: string) {
   try {
+    // Security check
+    const ipCheck = await checkIPBeforeAction("delete car");
+    if (!ipCheck.allowed) {
+      return {
+        success: false,
+        error: ipCheck.reason || "Access denied"
+      };
+    }
+
     await requireAdmin();
     
     const car = await prisma.car.findUnique({
@@ -613,7 +825,7 @@ export async function toggleFeatured(carId: string) {
     };
   }
 }
-
+ 
 // 8. UPDATE Car Status
 export async function updateCarStatus(carId: string, status: "AVAILABLE" | "UNAVAILABLE" | "SOLD") {
   try {
@@ -690,7 +902,7 @@ export async function searchCars(
 
     if (filters) {
       if (filters.priceRange) {
-        const range = priceRanges.find(r => r.label === filters.priceRange);
+       const range = priceRanges.find((r: { label: string; min: number; max: number }) => r.label === filters.priceRange);
         if (range) {
           whereClause.price = {
             gte: range.min,

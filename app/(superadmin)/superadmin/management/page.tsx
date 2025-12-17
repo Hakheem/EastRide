@@ -27,8 +27,8 @@ async function SuperAdminManagementContent() {
   const users = (usersResult.success && usersResult.data) ? usersResult.data : []
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
+    <div className="padded">
+      <div className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Management</h1>
         <p className="text-muted-foreground mt-2">
           Manage your dealership, working hours, and user permissions
@@ -37,32 +37,32 @@ async function SuperAdminManagementContent() {
 
       <Tabs defaultValue="dealership" className="space-y-6">
         <TabsList className="grid w-full max-w-2xl grid-cols-3">
-          <TabsTrigger value="dealership" className="flex items-center gap-2">
+          <TabsTrigger value="dealership" className="cursor-pointer flex items-center gap-2">
             <Building2 className="h-4 w-4" />
             Dealership
           </TabsTrigger>
-          <TabsTrigger value="hours" className="flex items-center gap-2">
+          <TabsTrigger value="hours" className="cursor-pointer flex items-center gap-2">
             <Clock className="h-4 w-4" />
             Working Hours
           </TabsTrigger>
-          <TabsTrigger value="users" className="flex items-center gap-2">
+          <TabsTrigger value="users" className="cursor-pointer flex items-center gap-2">
             <Users className="h-4 w-4" />
             Users ({users.length})
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="dealership" className="space-y-6">
+        <TabsContent value="dealership" className="space-y-6 bg-gray-50 dark:bg-gray-900">
           <DealershipInfoManager initialData={dealership} />
         </TabsContent>
 
-        <TabsContent value="hours" className="space-y-6">
+        <TabsContent value="hours" className="space-y-6 bg-gray-50 dark:bg-gray-900">
           <WorkingHoursManager 
             dealershipId={dealership?.id || null}
             initialHours={dealership?.workingHours}
           />
         </TabsContent>
 
-        <TabsContent value="users" className="space-y-6">
+        <TabsContent value="users" className="space-y-6 bg-gray-50 dark:bg-gray-900">
           <UserManagement users={users} />
         </TabsContent>
       </Tabs>
@@ -72,7 +72,7 @@ async function SuperAdminManagementContent() {
 
 function SuperAdminManagementSkeleton() {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="padded">
       <div className="mb-8">
         <Skeleton className="h-9 w-48 mb-2" />
         <Skeleton className="h-5 w-96" />

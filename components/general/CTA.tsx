@@ -13,9 +13,9 @@ export default function CTA() {
     const showSignUpButton = !session?.user
 
     return (
-        <section className="relative py-20 md:py-28">
+        <section className="relative py-24 md:py-28">
             {/* Single container div with background and everything */}
-            <div className="relative flex items-center justify-center bg-linear-to-br from-primary/15 via-background/95 to-cyan-500/20 dark:from-primary/10 dark:via-background/95 dark:to-cyan-500/10 rounded-3xl mx-4 md:mx-8 lg:mx-12 overflow-hidden py-16 md:py-24">
+            <div className="relative flex items-center justify-center bg-linear-to-br from-primary/15 via-background/95 to-cyan-500/20 dark:from-primary/10 dark:via-background/95 dark:to-cyan-500/10 rounded-2xl mx-4 md:mx-8 lg:mx-12 overflow-hidden py-16 md:py-24">
 
                 {/* Background pattern  */}
                 <div className="absolute inset-0">
@@ -108,7 +108,7 @@ export default function CTA() {
                 {/* Center Content */}
                 <div className="relative z-20 text-center max-w-2xl mx-auto px-4">
                     <motion.h2
-                        initial={{ opacity: 0, y: 10 }}
+                        initial={{ opacity: 0, y: 10 }} 
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.7 }}
                         className="text-3xl  lg:text-5xl capitalize font-bold text-gray-900 dark:text-white mb-6"
@@ -156,7 +156,7 @@ export default function CTA() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.4, delay: 1 }}
-                        className="flex flex-col sm:flex-row flex-wrap justify-center gap-6 text-sm text-gray-700 dark:text-gray-300"
+                        className="flex flex-col sm:flex-row flex-wrap items-center justify-center mx-auto gap-3 md:gap-6 text-sm text-gray-700 dark:text-gray-300"
                     >
                         <Badge variant='secondary' className="flex items-center justify-center gap-2 px-4 py-2 rounded-full">
                             <BadgeCheck className="h-5 w-5 text-green-600 dark:text-green-400" />

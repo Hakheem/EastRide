@@ -249,24 +249,30 @@ export default function EditCarForm({ car }: EditCarFormProps) {
     }
 
     return (
-        <div className="container mx-auto px-4">
+        <div className="">
             {/* Header */}
-            <div className="mb-6">
-                <Button variant="ghost" asChild className="mb-4">
+            <div className="mb-6 flex justify-between items-center">
+               
+                <div>
+                <h1 className="text-2xl font-bold">Edit Car</h1>
+                <p className="text-gray-600 dark:text-gray-400 mt-2">
+                    Update details for {car.make} {car.model}
+                </p>
+                </div>
+
+ <Button variant="ghost" asChild className="mb-4">
                     <Link href="/admin/cars">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to Cars
                     </Link>
                 </Button>
-                <h1 className="text-3xl font-bold">Edit Car</h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-2">
-                    Update details for {car.make} {car.model}
-                </p>
+
+
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mb-8">
                 {/* Basic Information */}
-                <Card>
+                <Card className='bg-gray-100 dark:bg-gray-900' >
                     <CardHeader>
                         <CardTitle>Basic Information</CardTitle>
                         <CardDescription>Update the core details of the vehicle</CardDescription>
@@ -361,7 +367,7 @@ export default function EditCarForm({ car }: EditCarFormProps) {
                 </Card>
 
                 {/* Specifications */}
-                <Card>
+                <Card className='bg-gray-100 dark:bg-gray-900' >
                     <CardHeader>
                         <CardTitle>Specifications</CardTitle>
                         <CardDescription>Technical details and features</CardDescription>
@@ -470,7 +476,7 @@ export default function EditCarForm({ car }: EditCarFormProps) {
                 </Card>
 
                 {/* Status and Featured */}
-                <Card>
+                <Card className='bg-gray-100 dark:bg-gray-900'>
                     <CardHeader>
                         <CardTitle>Status & Visibility</CardTitle>
                         <CardDescription>Set availability and featured status</CardDescription>
@@ -519,7 +525,7 @@ export default function EditCarForm({ car }: EditCarFormProps) {
                 </Card>
 
                 {/* Images */}
-                <Card>
+                <Card className='bg-gray-100 dark:bg-gray-900' >
                     <CardHeader>
                         <CardTitle>Images</CardTitle>
                         <CardDescription>

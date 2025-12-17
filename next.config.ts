@@ -1,14 +1,18 @@
-/** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb', // Increased limit for image uploads
+    },
+  },
+  
   images: {
     remotePatterns: [
-      // Google user profile images
       {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
         pathname: "/**",
       },
-      {
+      { 
         protocol: "https",
         hostname: "*.googleusercontent.com",
         pathname: "/**",
@@ -53,3 +57,4 @@ const nextConfig = {
 };
 
 export default nextConfig;
+

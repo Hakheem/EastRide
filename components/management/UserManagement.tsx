@@ -116,7 +116,7 @@ export default function UserManagement({ users }: UserManagementProps) {
 
   return (
     <>
-      <Card>
+      <Card className='bg-gray-50 dark:bg-gray-900'>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />

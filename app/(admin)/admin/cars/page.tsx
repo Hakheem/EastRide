@@ -11,27 +11,30 @@ export const metadata = {
 }
 
 interface PageProps {
-    searchParams?: {
+    searchParams?: Promise<{
         q?: string
         status?: string
         featured?: string
         minPrice?: string
         maxPrice?: string
         page?: string
-    }
+    }>
 }
 
-const CarsPage = async ({ searchParams = {} }: PageProps) => {
-    const page = parseInt(searchParams.page || '1')
+const CarsPage = async ({ searchParams }: PageProps) => {
+    // Await searchParams in Next.js 15+
+    const params = await searchParams || {}
+    
+    const page = parseInt(params.page || '1')
     const limit = 10
 
     // Fetch cars with search params
     const result = await getAllCars(page, limit, {
-        status: searchParams.status as any,
-        featured: searchParams.featured ? searchParams.featured === 'true' : undefined,
-        make: searchParams.q,
-        minPrice: searchParams.minPrice ? parseInt(searchParams.minPrice) : undefined,
-        maxPrice: searchParams.maxPrice ? parseInt(searchParams.maxPrice) : undefined,
+        status: params.status as any,
+        featured: params.featured ? params.featured === 'true' : undefined,
+        make: params.q,
+        minPrice: params.minPrice ? parseInt(params.minPrice) : undefined,
+        maxPrice: params.maxPrice ? parseInt(params.maxPrice) : undefined,
     })
 
     if (!result.success) {
@@ -73,12 +76,11 @@ const CarsPage = async ({ searchParams = {} }: PageProps) => {
         status: car.status,
         featured: car.featured,
         images: car.images,
-        createdAt: car.createdAt.toISOString(), // Convert Date to string
-        // Add other fields if needed
+        createdAt: car.createdAt.toISOString(), 
     }))
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 mb-8">
             <div>
                 <h1 className="text-3xl font-bold">Cars Inventory Management</h1>
                 <p className="text-gray-600 dark:text-gray-400 mt-2">
@@ -86,7 +88,7 @@ const CarsPage = async ({ searchParams = {} }: PageProps) => {
                 </p>
             </div>
 
-            <Card>
+            <Card className='bg-gray-50 dark:bg-gray-900' >
                 <CardContent className="pt-6">
                     <CarsList />
                     
@@ -95,14 +97,14 @@ const CarsPage = async ({ searchParams = {} }: PageProps) => {
                         <CarsTable 
                             cars={transformedCars}
                             pagination={pagination}
-                            searchParams={searchParams}
+                            searchParams={params}
                         />
                     ) : (
                         <div className="text-center py-12 border rounded-lg mt-4">
                             <p className="text-gray-500 dark:text-gray-400">
-                                {searchParams.q ? `No cars found for "${searchParams.q}"` : 'No cars found'}
+                                {params.q ? `No cars found for "${params.q}"` : 'No cars found'}
                             </p>
-                            {searchParams.q && (
+                            {params.q && (
                                 <p className="text-sm text-gray-400 mt-2">
                                     Try searching with different keywords
                                 </p>

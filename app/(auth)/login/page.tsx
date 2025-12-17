@@ -5,7 +5,7 @@ export default async function LoginPage() {
   return (
     <div className="w-full">
       {/* Form Header  */}
-      <div className="flex flex-col items-center text-center gap-3 mb-8">
+      <div className="flex justify-center items-center text-center gap-3 mb-8">
         {/* Logo */}
         <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-2">
           <div className="relative w-8 h-8">

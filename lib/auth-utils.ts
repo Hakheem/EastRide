@@ -42,7 +42,7 @@ export async function requireAdmin() {
   
   console.log("✅ requireAdmin: Access granted");
   return session;
-}
+} 
 
 /**
  * Check if user is authenticated and is a superadmin

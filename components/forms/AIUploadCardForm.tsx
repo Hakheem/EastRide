@@ -25,10 +25,86 @@ interface AIUploadCarFormProps {
   onSuccess?: () => void
 }
 
+// Optional: Simple client-side compression (inline)
+async function compressImageIfNeeded(file: File): Promise<File> {
+  // Only compress if larger than 5MB
+  if (file.size <= 5 * 1024 * 1024) {
+    return file;
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      // Use window.Image for browser compatibility
+      const img = new window.Image();
+      
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        // Resize if too large
+        const maxDimension = 1920;
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = (height * maxDimension) / width;
+            width = maxDimension;
+          } else {
+            width = (width * maxDimension) / height;
+            height = maxDimension;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(file); // Return original if compression fails
+          return;
+        }
+        
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              resolve(file);
+              return;
+            }
+            
+            const compressedFile = new File(
+              [blob],
+              file.name,
+              {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+              }
+            );
+            
+            console.log(`📉 Compressed ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
+            resolve(compressedFile);
+          },
+          'image/jpeg',
+          0.85 // 85% quality
+        );
+      };
+      
+      img.onerror = () => resolve(file);
+      img.src = e.target?.result as string;
+    };
+    
+    reader.onerror = () => resolve(file);
+    reader.readAsDataURL(file);
+  });
+}
+
 export function AIUploadCarForm({ onSuccess }: AIUploadCarFormProps) {
   const router = useRouter()
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isCompressing, setIsCompressing] = useState(false)
   const [aiImage, setAiImage] = useState<File | null>(null)
   const [aiResult, setAiResult] = useState<any>(null)
   const [showForm, setShowForm] = useState(false)
@@ -76,6 +152,7 @@ export function AIUploadCarForm({ onSuccess }: AIUploadCarFormProps) {
     maxSize: 10 * 1024 * 1024,
     multiple: false,
     noClick: true,
+    disabled: isAnalyzing || isCompressing,
   })
 
   const handleAIImageUpload = async (file: File) => {
@@ -90,11 +167,25 @@ export function AIUploadCarForm({ onSuccess }: AIUploadCarFormProps) {
       return
     }
 
-    setAiImage(file)
+    // Compress if needed
+    setIsCompressing(true)
+    let processedFile = file
+    try {
+      processedFile = await compressImageIfNeeded(file)
+      if (processedFile.size < file.size) {
+        toast.success(`Image compressed: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(processedFile.size / 1024 / 1024).toFixed(2)}MB`)
+      }
+    } catch (error) {
+      console.error('Compression failed, using original:', error)
+    } finally {
+      setIsCompressing(false)
+    }
+
+    setAiImage(processedFile)
     setIsAnalyzing(true)
 
     try {
-      const result = await processCarImageWithAI(file)
+      const result = await processCarImageWithAI(processedFile)
       
       if (result.success && result.data) {
         setAiResult(result.data)
@@ -114,7 +205,7 @@ export function AIUploadCarForm({ onSuccess }: AIUploadCarFormProps) {
         setValue('mileage', parseInt(mileageStr) || 0)
         
         setValue('description', result.data.description || '')
-        setValue('images', [file], { shouldValidate: true })
+        setValue('images', [processedFile], { shouldValidate: true })
         
         setShowForm(true)
         toast.success(`AI analysis complete! Confidence: ${(result.data.confidence * 100).toFixed(1)}%`)
@@ -124,7 +215,7 @@ export function AIUploadCarForm({ onSuccess }: AIUploadCarFormProps) {
       }
     } catch (error) {
       console.error('AI analysis error:', error)
-      toast.error('Failed to analyze image')
+      toast.error('Failed to analyze image. The AI service might be temporarily unavailable.')
       setAiImage(null)
     } finally {
       setIsAnalyzing(false)
@@ -181,7 +272,6 @@ export function AIUploadCarForm({ onSuccess }: AIUploadCarFormProps) {
         resetAI()
         onSuccess?.()
         
-        // Redirect to cars page
         if (result.redirect) {
           router.push(result.redirect)
         }
@@ -196,8 +286,10 @@ export function AIUploadCarForm({ onSuccess }: AIUploadCarFormProps) {
     }
   }
 
+  const isProcessing = isAnalyzing || isCompressing
+
   return (
-    <Card>
+    <Card className='bg-gray-50 dark:bg-gray-900'>
       <CardHeader>
         <CardTitle>AI-Powered Car Upload</CardTitle>
         <CardDescription>Upload a car image and let AI analyze it to automatically fill the details</CardDescription>
@@ -212,7 +304,7 @@ export function AIUploadCarForm({ onSuccess }: AIUploadCarFormProps) {
                 isDragActive
                   ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
                   : 'border-gray-300 dark:border-gray-600 hover:border-primary dark:hover:border-primary'
-              } ${isAnalyzing ? 'opacity-50 cursor-not-allowed' : ''}`}
+              } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <input 
                 type="file" 
@@ -220,12 +312,15 @@ export function AIUploadCarForm({ onSuccess }: AIUploadCarFormProps) {
                 onChange={handleFileSelect}
                 accept="image/jpeg,image/jpg,image/png,image/webp"
                 className="hidden"
+                disabled={isProcessing}
               />
               <input {...getInputProps()} />
               
               <Camera className="mx-auto mb-4 text-gray-400 dark:text-gray-500 size-16" />
               <p className="mb-2 text-gray-700 dark:text-gray-300 font-medium text-lg">
-                {isDragActive && !isDragReject
+                {isCompressing
+                  ? "Compressing image..."
+                  : isDragActive && !isDragReject
                   ? "Drop car image here for AI analysis..."
                   : "Upload a car image for AI analysis"
                 }
@@ -243,10 +338,15 @@ export function AIUploadCarForm({ onSuccess }: AIUploadCarFormProps) {
                 type="button"
                 variant="outline"
                 className="mt-2 disabled:opacity-50"
-                disabled={isAnalyzing}
+                disabled={isProcessing}
                 onClick={triggerFileInput}
               >
-                {isAnalyzing ? (
+                {isCompressing ? (
+                  <>
+                    <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                    Compressing...
+                  </>
+                ) : isAnalyzing ? (
                   <>
                     <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                     Analyzing...
@@ -260,7 +360,7 @@ export function AIUploadCarForm({ onSuccess }: AIUploadCarFormProps) {
               </Button>
             </div>
 
-            {aiImage && isAnalyzing && (
+            {aiImage && isProcessing && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -280,11 +380,11 @@ export function AIUploadCarForm({ onSuccess }: AIUploadCarFormProps) {
                   <div className="flex items-center justify-center gap-4">
                     <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                     <p className="text-lg font-medium text-gray-700 dark:text-gray-300">
-                      AI is analyzing your car image...
+                      {isCompressing ? 'Compressing image...' : 'AI is analyzing your car image...'}
                     </p>
                   </div>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                    Detecting make, model, year, and other details
+                    {isCompressing ? 'Optimizing file size' : 'Detecting make, model, year, and other details'}
                   </p>
                 </div>
               </motion.div>
@@ -328,6 +428,7 @@ export function AIUploadCarForm({ onSuccess }: AIUploadCarFormProps) {
                     size="sm"
                     onClick={resetAI}
                     className="text-gray-500 hover:text-gray-700"
+                    disabled={isSubmitting}
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -383,11 +484,12 @@ export function AIUploadCarForm({ onSuccess }: AIUploadCarFormProps) {
                   )}
                 </Button>
               </div>
-            </form>
+            </form> 
           </div>
-        )}
+        )} 
       </CardContent>
     </Card>
   )
 }
+
 

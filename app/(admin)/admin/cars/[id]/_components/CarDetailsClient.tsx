@@ -101,21 +101,21 @@ export default function CarDetailsClient({ car }: CarDetailsClientProps) {
     ]
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="min-h-screen">
+            <div className="">
                 {/* Back Button */}
-                <Button variant="ghost" asChild className="mb-6">
+                <Button variant="ghost" asChild className="mb-4">
                     <Link href="/admin/cars">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to Cars
                     </Link>
                 </Button>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                     {/* Left Column - Image Gallery */}
                     <div className="lg:col-span-2 space-y-4">
-                        {/* Main Image - FIXED TO FILL COMPLETELY */}
-                        <Card className="overflow-hidden">
+                        {/* Main Image  */}
+                        <Card className="overflow-hidden p-0">
                             <div className="relative aspect-video bg-gray-100 dark:bg-gray-800">
                                 <AnimatePresence mode="wait">
                                     <motion.div
@@ -151,19 +151,19 @@ export default function CarDetailsClient({ car }: CarDetailsClientProps) {
                                             onClick={handlePrevImage}
                                             className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all z-20"
                                         >
-                                            <ChevronLeft className="h-6 w-6" />
+                                            <ChevronLeft className="h-5 w-5" />
                                         </button>
                                         <button
                                             onClick={handleNextImage}
                                             className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all z-20"
                                         >
-                                            <ChevronRight className="h-6 w-6" />
+                                            <ChevronRight className="h-5 w-5" />
                                         </button>
                                     </>
                                 )}
 
                                 {/* Image Counter */}
-                                <div className="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm z-20">
+                                <div className="absolute bottom-3 right-3 bg-black/70 text-white px-2 py-1 rounded-full text-sm z-20">
                                     {selectedImage + 1} / {car.images.length}
                                 </div>
                             </div>
@@ -198,8 +198,8 @@ export default function CarDetailsClient({ car }: CarDetailsClientProps) {
                         )}
 
                         {/* Description */}
-                        <Card>
-                            <CardContent className="pt-6">
+                        <Card className='p-0 bg-transparent shadow-none border-none'>
+                            <CardContent className="py-6 px-0">
                                 <h2 className="text-xl font-semibold mb-4">Description</h2>
                                 <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
                                     {car.description || 'No description available.'}
@@ -210,7 +210,7 @@ export default function CarDetailsClient({ car }: CarDetailsClientProps) {
 
                     {/* Right Column - Car Info */}
                     <div className="space-y-4">
-                        <Card>
+                        <Card className='bg-gray-50 dark:bg-gray-900'>
                             <CardContent className="pt-6 space-y-6">
                                 {/* Title and Status */}
                                 <div>
@@ -232,7 +232,7 @@ export default function CarDetailsClient({ car }: CarDetailsClientProps) {
                                 {/* Price */}
                                 <div>
                                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Price</p>
-                                    <p className="text-4xl font-bold text-primary">
+                                    <p className="text-4xl font-bold text-gradient">
                                         {formatCurrency(car.price)}
                                     </p>
                                 </div>
@@ -287,3 +287,4 @@ export default function CarDetailsClient({ car }: CarDetailsClientProps) {
         </div>
     )
 }
+

@@ -86,7 +86,7 @@ export default function WorkingHoursManager({ dealershipId, initialHours }: Work
   }
 
   return (
-    <Card>
+    <Card className='bg-gray-50 dark:bg-gray-900' >
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-5 w-5" />
@@ -107,7 +107,7 @@ export default function WorkingHoursManager({ dealershipId, initialHours }: Work
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-lg border bg-card"
+                className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-lg border bg-gray-200 dark:bg-gray-700"
               >
                 <input
                   type="hidden"
@@ -115,7 +115,7 @@ export default function WorkingHoursManager({ dealershipId, initialHours }: Work
                   value={day}
                 />
 
-                <div className="w-full sm:w-32 font-medium">
+                <div className="w-full sm:w-32 font-medium ">
                   {getDayLabel(day)}
                 </div>
 
@@ -138,7 +138,7 @@ export default function WorkingHoursManager({ dealershipId, initialHours }: Work
                         type="time"
                         {...register(`hours.${index}.openTime`)}
                         disabled={isSubmitting}
-                        className="w-full"
+                        className="w-full bg-gray-50 dark:bg-gray-900 "
                       />
                       {errors.hours?.[index]?.openTime && (
                         <p className="text-xs text-red-500">{errors.hours[index]?.openTime?.message}</p>
@@ -151,7 +151,7 @@ export default function WorkingHoursManager({ dealershipId, initialHours }: Work
                         type="time"
                         {...register(`hours.${index}.closeTime`)}
                         disabled={isSubmitting}
-                        className="w-full"
+                        className="w-full bg-gray-50 dark:bg-gray-900"
                       />
                       {errors.hours?.[index]?.closeTime && (
                         <p className="text-xs text-red-500">{errors.hours[index]?.closeTime?.message}</p>

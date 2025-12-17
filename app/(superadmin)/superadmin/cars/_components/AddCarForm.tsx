@@ -14,7 +14,7 @@ const preprocessNumber = (val: unknown): number => {
     const parsed = parseFloat(val)
     return isNaN(parsed) ? 0 : parsed
   }
-  return 0
+  return 0 
 }
 
 // Define the form schema with proper preprocessing

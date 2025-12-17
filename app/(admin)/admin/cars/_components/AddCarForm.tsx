@@ -61,7 +61,14 @@ const AddCarForm = () => {
   }
 
   return (
-    <div className="container mx-auto max-w-6xl px-4">
+    <div className=" space-y-6 mb-6">
+  <div>
+                <h1 className="text-3xl font-bold">Create New Car </h1>
+                <p className="text-gray-600 dark:text-gray-400 mt-2">
+                    Add a new car to your listings
+                </p>
+            </div>
+
       <Tabs 
         defaultValue="manual" 
         value={activeTab} 
@@ -83,11 +90,11 @@ const AddCarForm = () => {
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="manual" className='mt-6'>
+        <TabsContent value="manual" className='mt-4 '>
           <ManualAddCarForm onSuccess={handleSuccess} />
         </TabsContent>
         
-        <TabsContent value="ai" className='mt-6'>
+        <TabsContent value="ai" className='mt-4'>
           <AIUploadCarForm onSuccess={handleSuccess} />
         </TabsContent>
       </Tabs>

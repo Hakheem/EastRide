@@ -17,9 +17,9 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           </div>
           
           {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-linear-to-tl from-blue-900/80 via-transparent to-transparent"></div>
+          <div className="absolute inset-0 bg-linear-to-tl from-blue-500/80 via-transparent to-transparent"></div>
           
-          {/* Content Overlay - Keep as it was (left-aligned) */}
+          {/* Content Overlay  */}
           <div className="relative h-full flex flex-col justify-end p-8">
             <div className="max-w-md">
               {/* Logo */}

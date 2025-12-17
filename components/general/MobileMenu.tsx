@@ -5,16 +5,26 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 import { Session } from 'next-auth'
-import { Home, Car, Phone, X, LogOut } from 'lucide-react'
+import { Home, Car, Phone, X, LogOut, Heart, User, List } from 'lucide-react'
 
 interface MobileMenuProps {
   isOpen: boolean
   onClose: () => void
   session: Session | null
   onLogoutClick: () => void
-}
+  currentPath: string
+} 
 
-export default function MobileMenu({ isOpen, session, onClose, onLogoutClick }: MobileMenuProps) {
+export default function MobileMenu({ isOpen, session, onClose, onLogoutClick, currentPath }: MobileMenuProps) {
+  
+  // Check if link is active
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return currentPath === '/'
+    }
+    return currentPath?.startsWith(path)
+  }
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -61,79 +71,215 @@ export default function MobileMenu({ isOpen, session, onClose, onLogoutClick }: 
 
               {/* Navigation Links */}
               <div className="flex-1 overflow-y-auto p-6">
-                <nav className="space-y-4">
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                  >
-                    <Link 
-                      href="/" 
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors"
-                      onClick={onClose}
-                    >
-                      <Home className="w-5 h-5" />
-                      <span>Home</span>
-                    </Link>
-                  </motion.div>
-                  
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.15 }}
-                  >
-                    <Link 
-                      href="/cars" 
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors"
-                      onClick={onClose}
-                    >
-                      <Car className="w-5 h-5" />
-                      <span>Browse Cars</span>
-                    </Link>
-                  </motion.div>
-                  
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    <Link 
-                      href="/contact" 
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors"
-                      onClick={onClose}
-                    >
-                      <Phone className="w-5 h-5" />
-                      <span>Contact Us</span>
-                    </Link>
-                  </motion.div>
-
-                  {/* Logout button for logged in users */}
-                  {session && (
+                <nav className="space-y-2">
+                  {/* Main Navigation */}
+                  <div className="pb-4 mb-4 border-b">
+                    <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 px-3">
+                      Navigation
+                    </p>
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 }}
-                      className="pt-8"
+                      transition={{ delay: 0.1 }}
                     >
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start gap-3 text-red-600 dark:text-red-400"
-                        onClick={() => {
-                          onLogoutClick()
-                          onClose()
-                        }}
+                      <Link 
+                        href="/" 
+                        className={`
+                          flex items-center gap-3 p-3 rounded-lg transition-colors
+                          ${isActive('/') ? 'bg-primary/10 text-primary' : 'hover:bg-accent'}
+                        `}
+                        onClick={onClose}
                       >
-                        <LogOut className="w-5 h-5" />
-                        Logout
-                      </Button>
+                        <Home className="w-5 h-5" />
+                        <span>Home</span>
+                        {isActive('/') && (
+                          <div className="ml-auto w-2 h-2 rounded-full bg-primary" />
+                        )}
+                      </Link>
                     </motion.div>
+                    
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.15 }}
+                    >
+                      <Link 
+                        href="/cars" 
+                        className={`
+                          flex items-center gap-3 p-3 rounded-lg transition-colors
+                          ${isActive('/cars') ? 'bg-primary/10 text-primary' : 'hover:bg-accent'}
+                        `}
+                        onClick={onClose}
+                      >
+                        <Car className="w-5 h-5" />
+                        <span>Browse Cars</span>
+                        {isActive('/cars') && (
+                          <div className="ml-auto w-2 h-2 rounded-full bg-primary" />
+                        )}
+                      </Link>
+                    </motion.div>
+                    
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      <Link 
+                        href="/contact" 
+                        className={`
+                          flex items-center gap-3 p-3 rounded-lg transition-colors
+                          ${isActive('/contact') ? 'bg-primary/10 text-primary' : 'hover:bg-accent'}
+                        `}
+                        onClick={onClose}
+                      >
+                        <Phone className="w-5 h-5" />
+                        <span>Contact Us</span>
+                        {isActive('/contact') && (
+                          <div className="ml-auto w-2 h-2 rounded-full bg-primary" />
+                        )}
+                      </Link>
+                    </motion.div>
+                  </div>
+
+                  {/* User Navigation (only for logged in users) */}
+                  {session && (
+                    <>
+                      <div className="pb-4 mb-4 border-b">
+                        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 px-3">
+                          My Account
+                        </p>
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.25 }}
+                        >
+                          <Link 
+                            href="/profile" 
+                            className={`
+                              flex items-center gap-3 p-3 rounded-lg transition-colors
+                              ${isActive('/profile') ? 'bg-primary/10 text-primary' : 'hover:bg-accent'}
+                            `}
+                            onClick={onClose}
+                          >
+                            <User className="w-5 h-5" />
+                            <span>Profile Settings</span>
+                            {isActive('/profile') && (
+                              <div className="ml-auto w-2 h-2 rounded-full bg-primary" />
+                            )}
+                          </Link>
+                        </motion.div>
+
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 }}
+                        >
+                          <Link 
+                            href="/saved-cars" 
+                            className={`
+                              flex items-center gap-3 p-3 rounded-lg transition-colors
+                              ${isActive('/saved-cars') ? 'bg-primary/10 text-primary' : 'hover:bg-accent'}
+                            `}
+                            onClick={onClose}
+                          >
+                            <Heart className="w-5 h-5" />
+                            <span>Saved Cars</span>
+                            {isActive('/saved-cars') && (
+                              <div className="ml-auto w-2 h-2 rounded-full bg-primary" />
+                            )}
+                          </Link>
+                        </motion.div>
+
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.35 }}
+                        >
+                          <Link 
+                            href="/reservations" 
+                            className={`
+                              flex items-center gap-3 p-3 rounded-lg transition-colors
+                              ${isActive('/reservations') ? 'bg-primary/10 text-primary' : 'hover:bg-accent'}
+                            `}
+                            onClick={onClose}
+                          >
+                            <Car className="w-5 h-5" />
+                            <span>My Reservations</span>
+                            {isActive('/reservations') && (
+                              <div className="ml-auto w-2 h-2 rounded-full bg-primary" />
+                            )}
+                          </Link>
+                        </motion.div>
+
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.4 }}
+                        >
+                          <Link 
+                            href="/listings" 
+                            className={`
+                              flex items-center gap-3 p-3 rounded-lg transition-colors
+                              ${isActive('/listings') ? 'bg-primary/10 text-primary' : 'hover:bg-accent'}
+                            `}
+                            onClick={onClose}
+                          >
+                            <List className="w-5 h-5" />
+                            <span>My Listings</span>
+                            {isActive('/listings') && (
+                              <div className="ml-auto w-2 h-2 rounded-full bg-primary" />
+                            )}
+                          </Link>
+                        </motion.div>
+                      </div>
+
+                      {/* User Info */}
+                      <div className="mb-4 p-4 bg-accent rounded-lg">
+                        <div className="flex items-center gap-3 mb-2">
+                          {session.user?.image && (
+                            <Image
+                              src={session.user.image}
+                              alt={session.user.name || 'User'}
+                              width={40}
+                              height={40}
+                              className="w-10 h-10 rounded-full"
+                              unoptimized
+                            />
+                          )}
+                          <div>
+                            <p className="font-semibold text-sm">{session.user?.name}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              {session.user?.email}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </>
                   )}
                 </nav>
               </div>
 
-              {/* For non-logged in users */}
-              {!session && (
-                <div className="p-6 border-t">
+              {/* Footer with Logout/Get Started */}
+              <div className="p-6 border-t">
+                {session ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <Button
+                      variant="outline"
+                      className="w-full justify-center gap-3 text-red-600 dark:text-red-400 border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                      onClick={() => {
+                        onLogoutClick()
+                        onClose()
+                      }}
+                    >
+                      <LogOut className="w-5 h-5" />
+                      Logout
+                    </Button>
+                  </motion.div>
+                ) : (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -143,8 +289,8 @@ export default function MobileMenu({ isOpen, session, onClose, onLogoutClick }: 
                       <Button className="w-full">Get Started</Button>
                     </Link>
                   </motion.div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </motion.div>
         </>
@@ -152,3 +298,4 @@ export default function MobileMenu({ isOpen, session, onClose, onLogoutClick }: 
     </AnimatePresence>
   )
 }
+

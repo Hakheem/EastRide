@@ -1,4 +1,3 @@
-// app/(admin)/admin/cars/[id]/page.tsx
 import React from 'react'
 import { notFound } from 'next/navigation'
 import { getCarById } from '@/app/actions/cars'
@@ -6,7 +5,7 @@ import CarDetailsClient from './_components/CarDetailsClient'
 
 interface PageProps {
     params: Promise<{
-        id: string
+        id: string 
     }>
 }
 

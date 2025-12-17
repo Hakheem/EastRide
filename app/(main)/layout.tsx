@@ -7,7 +7,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <>
             <div className='text-gray-900 dark:text-white'>
                 <Navbar />
+                <div className='mx-auto mt-20 md:mt-24'>
                 {children}
+                </div>
                 <Footer/>
             </div>
             <ThemeToggle />

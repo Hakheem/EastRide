@@ -14,8 +14,8 @@ import { bodyTypes } from "@/data/data"
 const BodyType = () => {
   return (
     <section>
-      <div className="py-12 lg:mt-8 padded">
-        <div className="flex items-center justify-between mb-12">
+      <div className="py-8 md:py-12 lg:mt-8 padded">
+        <div className="flex items-center justify-between mb-8 md:mb-12">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             Browse by Body Type
           </h2>
@@ -62,7 +62,7 @@ const BodyType = () => {
                 spaceBetween: 22
               },
             }}
-            className="pb-8" 
+            className="pb-6" 
           >
             {bodyTypes.map((type) => (
               <SwiperSlide

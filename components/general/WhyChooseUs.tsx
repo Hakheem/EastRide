@@ -23,13 +23,13 @@ const WhyChooseUs = () => {
   ]
 
   return (
-    <div className='py-24 '>
+    <div className='py-20 '>
       <div className='mx-auto padded'>
-        <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">
+        <h2 className="text-3xl font-bold text-center mb-10">
           Why Choose <span className='text-gradient'>EastRide?</span>
         </h2>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-6">
           {reasons.map((reason, index) => (
             <div 
               key={index} 

@@ -73,8 +73,7 @@ const CarsPage = async ({ searchParams = {} }: PageProps) => {
         status: car.status,
         featured: car.featured,
         images: car.images,
-        createdAt: car.createdAt.toISOString(), // Convert Date to string
-        // Add other fields if needed
+        createdAt: car.createdAt.toISOString(), 
     }))
 
     return (

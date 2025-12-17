@@ -10,7 +10,7 @@ export default async function FeaturedCars() {
   const featuredCars: CarType[] = response.data.map((car: any) => ({
     id: car.id.toString(),
     name: `${car.make} ${car.model}`,
-    make: car.make,
+    make: car.make, 
     model: car.model,
     year: car.year,
     price: car.price,

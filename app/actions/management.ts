@@ -4,6 +4,14 @@ import { requireAdmin, requireSuperAdmin } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { DayOfWeek } from "@prisma/client";
+import { headers } from "next/headers";
+
+// Import SECURITY utilities
+import { 
+  sanitizeInput,
+  checkIPReputation,
+  recordIPViolation 
+} from "@/lib/security/shield-protection";
 
 export interface WorkingHoursData {
   dayOfWeek: DayOfWeek;
@@ -23,6 +31,88 @@ export interface DealershipData {
   updatedAt: Date;
 }
 
+// Helper to get IP address from headers
+async function getClientIP(): Promise<string> {
+  const headersList = await headers();
+  return headersList.get("x-forwarded-for")?.split(",")[0].trim() || 
+         headersList.get("x-real-ip") || 
+         "unknown";
+}
+
+// Helper to check IP reputation before sensitive operations
+async function checkIPBeforeAction(actionName: string): Promise<{ allowed: boolean; reason?: string }> {
+  const ip = await getClientIP();
+  const ipReputation = checkIPReputation(ip);
+  
+  if (ipReputation.blocked) {
+    console.log(`🚫 Blocked IP attempting ${actionName}: ${ip} (${ipReputation.violations} violations)`);
+    return { 
+      allowed: false, 
+      reason: "Your IP has been temporarily blocked due to suspicious activity. Please try again later." 
+    };
+  }
+
+  if (ipReputation.shouldWarn) {
+    console.log(`⚠️ Warning: IP ${ip} has ${ipReputation.violations} violations attempting ${actionName}`);
+  }
+
+  return { allowed: true };
+}
+
+// Enhanced validation with sanitization
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const sanitized = sanitizeInput(email);
+  return emailRegex.test(sanitized) && sanitized.length <= 254;
+}
+
+function isValidPhone(phone: string): boolean {
+  // Basic phone validation - adjust regex based on your requirements
+  const phoneRegex = /^\+?[\d\s\-()]+$/;
+  const sanitized = sanitizeInput(phone);
+  return phoneRegex.test(sanitized) && sanitized.replace(/\D/g, '').length >= 10;
+}
+
+function isValidTime(time: string): boolean {
+  // Validate HH:MM format (24-hour)
+  const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+  return timeRegex.test(time);
+}
+
+// Sanitize and validate dealership name
+function validateDealershipName(name: string): { valid: boolean; sanitized?: string; error?: string } {
+  const sanitized = sanitizeInput(name);
+  
+  if (sanitized.length < 2) {
+    return { valid: false, error: "Dealership name must be at least 2 characters" };
+  }
+  
+  if (sanitized.length > 100) {
+    return { valid: false, error: "Dealership name must be less than 100 characters" };
+  }
+  
+  // Check for suspicious patterns
+  if (/<|>|javascript:|on\w+=/i.test(sanitized)) {
+    return { valid: false, error: "Invalid characters in dealership name" };
+  }
+  
+  return { valid: true, sanitized };
+}
+
+// Sanitize and validate address
+function validateAddress(address: string): { valid: boolean; sanitized?: string; error?: string } {
+  const sanitized = sanitizeInput(address);
+  
+  if (sanitized.length < 5) {
+    return { valid: false, error: "Address must be at least 5 characters" };
+  }
+  
+  if (sanitized.length > 500) {
+    return { valid: false, error: "Address must be less than 500 characters" };
+  }
+  
+  return { valid: true, sanitized };
+}
 
 export async function getDealershipInfo() {
   await requireAdmin();
@@ -59,23 +149,64 @@ export async function getDealershipInfo() {
   }
 }
 
-
 export async function updateDealershipInfo(data: {
   name?: string;
   address?: string;
   phone?: string;
   email?: string;
 }) {
+  // Security check
+  const ipCheck = await checkIPBeforeAction("update dealership info");
+  if (!ipCheck.allowed) {
+    return {
+      success: false,
+      error: ipCheck.reason || "Access denied"
+    };
+  }
+
   const session = await requireAdmin();
+  const ip = await getClientIP();
 
   try {
-    // Basic validation
-    if (data.email && !isValidEmail(data.email)) {
-      return { success: false, error: "Invalid email format" };
+    // Sanitize and validate inputs
+    const sanitizedData: any = {};
+
+    if (data.name) {
+      const nameValidation = validateDealershipName(data.name);
+      if (!nameValidation.valid) {
+        recordIPViolation(ip);
+        console.log(`⚠️ Invalid dealership name from ${ip}: ${nameValidation.error}`);
+        return { success: false, error: nameValidation.error };
+      }
+      sanitizedData.name = nameValidation.sanitized;
     }
 
-    if (data.phone && !isValidPhone(data.phone)) {
-      return { success: false, error: "Invalid phone format" };
+    if (data.address) {
+      const addressValidation = validateAddress(data.address);
+      if (!addressValidation.valid) {
+        recordIPViolation(ip);
+        console.log(`⚠️ Invalid address from ${ip}: ${addressValidation.error}`);
+        return { success: false, error: addressValidation.error };
+      }
+      sanitizedData.address = addressValidation.sanitized;
+    }
+
+    if (data.email) {
+      if (!isValidEmail(data.email)) {
+        recordIPViolation(ip);
+        console.log(`⚠️ Invalid email format from ${ip}`);
+        return { success: false, error: "Invalid email format" };
+      }
+      sanitizedData.email = sanitizeInput(data.email);
+    }
+
+    if (data.phone) {
+      if (!isValidPhone(data.phone)) {
+        recordIPViolation(ip);
+        console.log(`⚠️ Invalid phone format from ${ip}`);
+        return { success: false, error: "Invalid phone format" };
+      }
+      sanitizedData.phone = sanitizeInput(data.phone);
     }
 
     // Check if dealership exists
@@ -85,7 +216,7 @@ export async function updateDealershipInfo(data: {
     if (existing) {
       dealership = await prisma.dealershipInfo.update({
         where: { id: existing.id },
-        data,
+        data: sanitizedData,
         include: {
           workingHours: true
         }
@@ -94,10 +225,10 @@ export async function updateDealershipInfo(data: {
       // Create new dealership with default working hours
       dealership = await prisma.dealershipInfo.create({
         data: {
-          name: data.name || "East Africa Rides",
-          address: data.address || "35/60 Nairobi Kenya",
-          phone: data.phone || "+254769403162",
-          email: data.email || "hakheem67@gmail.com",
+          name: sanitizedData.name || "East Africa Rides",
+          address: sanitizedData.address || "35/60 Nairobi Kenya",
+          phone: sanitizedData.phone || "+254769403162",
+          email: sanitizedData.email || "hakheem67@gmail.com",
         },
         include: {
           workingHours: true
@@ -113,7 +244,7 @@ export async function updateDealershipInfo(data: {
     revalidatePath("/superadmin/management");
     revalidatePath("/");
 
-    console.log(`✅ Dealership info updated by ${session.user?.email}`);
+    console.log(`✅ Dealership info updated by ${session.user?.email} from ${ip}`);
 
     return { success: true, data: dealership };
   } catch (error) {
@@ -141,11 +272,26 @@ export async function updateWorkingHoursForDay(
   }
 ) {
   const session = await requireAdmin();
+  const ip = await getClientIP();
 
   try {
     // Validate time format (HH:MM)
     if (!isValidTime(data.openTime) || !isValidTime(data.closeTime)) {
+      recordIPViolation(ip);
+      console.log(`⚠️ Invalid time format from ${ip}: ${data.openTime} - ${data.closeTime}`);
       return { success: false, error: "Invalid time format. Use HH:MM (24-hour format)" };
+    }
+
+    // Additional validation: ensure open time is before close time
+    if (data.isOpen) {
+      const [openHour, openMin] = data.openTime.split(':').map(Number);
+      const [closeHour, closeMin] = data.closeTime.split(':').map(Number);
+      const openMinutes = openHour * 60 + openMin;
+      const closeMinutes = closeHour * 60 + closeMin;
+
+      if (openMinutes >= closeMinutes) {
+        return { success: false, error: "Opening time must be before closing time" };
+      }
     }
 
     // Check if working hours exist for this day
@@ -211,12 +357,27 @@ export async function updateAllWorkingHours(
   }>
 ) {
   const session = await requireAdmin();
+  const ip = await getClientIP();
 
   try {
     // Validate all time formats
     for (const day of workingHoursData) {
       if (!isValidTime(day.openTime) || !isValidTime(day.closeTime)) {
+        recordIPViolation(ip);
+        console.log(`⚠️ Invalid time format for ${day.dayOfWeek} from ${ip}`);
         return { success: false, error: `Invalid time format for ${day.dayOfWeek}` };
+      }
+
+      // Validate open time is before close time
+      if (day.isOpen) {
+        const [openHour, openMin] = day.openTime.split(':').map(Number);
+        const [closeHour, closeMin] = day.closeTime.split(':').map(Number);
+        const openMinutes = openHour * 60 + openMin;
+        const closeMinutes = closeHour * 60 + closeMin;
+
+        if (openMinutes >= closeMinutes) {
+          return { success: false, error: `Opening time must be before closing time for ${day.dayOfWeek}` };
+        }
       }
     }
 
@@ -360,12 +521,25 @@ export async function getAllUsersForManagement() {
  * Accessible by: SUPERADMIN only
  */
 export async function promoteUserToAdmin(userId: string) {
+  // Security check
+  const ipCheck = await checkIPBeforeAction("promote user");
+  if (!ipCheck.allowed) {
+    return {
+      success: false,
+      error: ipCheck.reason || "Access denied"
+    };
+  }
+
   const session = await requireSuperAdmin();
+  const ip = await getClientIP();
 
   try {
+    // Sanitize userId
+    const sanitizedUserId = sanitizeInput(userId);
+
     // Check if user exists
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: sanitizedUserId },
       select: { id: true, email: true, name: true, role: true },
     });
 
@@ -382,7 +556,7 @@ export async function promoteUserToAdmin(userId: string) {
     }
 
     const updated = await prisma.user.update({
-      where: { id: userId },
+      where: { id: sanitizedUserId },
       data: { role: "ADMIN" },
       select: {
         id: true,
@@ -394,7 +568,7 @@ export async function promoteUserToAdmin(userId: string) {
 
     revalidatePath("/superadmin/management");
 
-    console.log(`✅ User ${updated.email} promoted to ADMIN by ${session.user?.email}`);
+    console.log(`✅ User ${updated.email} promoted to ADMIN by ${session.user?.email} from ${ip}`);
 
     return { success: true, data: updated, message: `${user.name || user.email} promoted to Admin` };
   } catch (error) {
@@ -408,12 +582,25 @@ export async function promoteUserToAdmin(userId: string) {
  * Accessible by: SUPERADMIN only
  */
 export async function demoteAdminToUser(userId: string) {
+  // Security check
+  const ipCheck = await checkIPBeforeAction("demote admin");
+  if (!ipCheck.allowed) {
+    return {
+      success: false,
+      error: ipCheck.reason || "Access denied"
+    };
+  }
+
   const session = await requireSuperAdmin();
+  const ip = await getClientIP();
 
   try {
+    // Sanitize userId
+    const sanitizedUserId = sanitizeInput(userId);
+
     // Check if user exists
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: sanitizedUserId },
       select: { id: true, email: true, name: true, role: true },
     });
 
@@ -430,7 +617,7 @@ export async function demoteAdminToUser(userId: string) {
     }
 
     const updated = await prisma.user.update({
-      where: { id: userId },
+      where: { id: sanitizedUserId },
       data: { role: "USER" },
       select: {
         id: true,
@@ -442,7 +629,7 @@ export async function demoteAdminToUser(userId: string) {
 
     revalidatePath("/superadmin/management");
 
-    console.log(`✅ Admin ${updated.email} demoted to USER by ${session.user?.email}`);
+    console.log(`✅ Admin ${updated.email} demoted to USER by ${session.user?.email} from ${ip}`);
 
     return { success: true, data: updated, message: `${user.name || user.email} demoted to User` };
   } catch (error) {
@@ -533,21 +720,4 @@ async function createDefaultWorkingHours(dealershipId: string) {
   await prisma.workingHours.createMany({
     data: workingHours
   });
-}
-
-function isValidEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-}
-
-function isValidPhone(phone: string): boolean {
-  // Basic phone validation - adjust regex based on your requirements
-  const phoneRegex = /^\+?[\d\s\-()]+$/;
-  return phoneRegex.test(phone) && phone.replace(/\D/g, '').length >= 10;
-}
-
-function isValidTime(time: string): boolean {
-  // Validate HH:MM format (24-hour)
-  const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-  return timeRegex.test(time);
 }

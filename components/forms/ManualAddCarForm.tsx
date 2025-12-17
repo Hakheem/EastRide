@@ -21,6 +21,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { CarFormFields } from '@/app/(admin)/admin/cars/_components/CarFormFields'
 import { carFormSchema, CarFormValues } from '@/app/(admin)/admin/cars/_components/AddCarForm'
 import { addNewCar } from '@/app/actions/cars'
+import { compressImagesClient } from '@/lib/client/image-utils'
 
 interface ManualAddCarFormProps {
   onSuccess?: () => void
@@ -29,6 +30,7 @@ interface ManualAddCarFormProps {
 export function ManualAddCarForm({ onSuccess }: ManualAddCarFormProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isCompressing, setIsCompressing] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const {
@@ -60,52 +62,9 @@ export function ManualAddCarForm({ onSuccess }: ManualAddCarFormProps) {
 
   const images = watch('images') || []
 
-  const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
-    onDrop: (acceptedFiles: File[]) => {
-      const currentImages = images || []
-      const totalImages = currentImages.length + acceptedFiles.length
-      
-      if (totalImages > 10) {
-        toast.error("Maximum 10 images allowed. You can upload " + (10 - currentImages.length) + " more")
-        return
-      }
-
-      const validFiles: File[] = []
-      acceptedFiles.forEach(file => {
-        if (file.size > 10 * 1024 * 1024) {
-          toast.error(`Image ${file.name} is too large (max 10MB)`)
-          return
-        }
-        
-        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
-        if (!validTypes.includes(file.type)) {
-          toast.error(`Image ${file.name} must be JPG, PNG, or WebP`)
-          return
-        }
-        
-        validFiles.push(file)
-      })
-
-      if (validFiles.length > 0) {
-        const newImages = [...currentImages, ...validFiles]
-        setValue('images', newImages, { shouldValidate: true })
-        toast.success(`Added ${validFiles.length} image${validFiles.length > 1 ? 's' : ''}`)
-      }
-    },
-    accept: {
-      'image/*': [".jpeg", ".jpg", ".png", ".webp"]
-    },
-    maxSize: 10 * 1024 * 1024,
-    multiple: true,
-    noClick: true,
-  })
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files || files.length === 0) return
-
+  const processAndAddImages = async (acceptedFiles: File[]) => {
     const currentImages = images || []
-    const totalImages = currentImages.length + files.length
+    const totalImages = currentImages.length + acceptedFiles.length
     
     if (totalImages > 10) {
       toast.error("Maximum 10 images allowed. You can upload " + (10 - currentImages.length) + " more")
@@ -113,7 +72,7 @@ export function ManualAddCarForm({ onSuccess }: ManualAddCarFormProps) {
     }
 
     const validFiles: File[] = []
-    Array.from(files).forEach(file => {
+    acceptedFiles.forEach(file => {
       if (file.size > 10 * 1024 * 1024) {
         toast.error(`Image ${file.name} is too large (max 10MB)`)
         return
@@ -129,10 +88,44 @@ export function ManualAddCarForm({ onSuccess }: ManualAddCarFormProps) {
     })
 
     if (validFiles.length > 0) {
-      const newImages = [...currentImages, ...validFiles]
-      setValue('images', newImages, { shouldValidate: true })
-      toast.success(`Added ${validFiles.length} image${validFiles.length > 1 ? 's' : ''}`)
+      // Compress images before adding
+      setIsCompressing(true)
+      try {
+        const compressedFiles = await compressImagesClient(
+          validFiles,
+          (current, total) => {
+            console.log(`Compressing image ${current}/${total}`)
+          }
+        )
+        
+        const newImages = [...currentImages, ...compressedFiles]
+        setValue('images', newImages, { shouldValidate: true })
+        toast.success(`Added ${validFiles.length} image${validFiles.length > 1 ? 's' : ''}`)
+      } catch (error) {
+        console.error('Compression error:', error)
+        toast.error('Failed to process images')
+      } finally {
+        setIsCompressing(false)
+      }
     }
+  }
+
+  const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
+    onDrop: processAndAddImages,
+    accept: {
+      'image/*': [".jpeg", ".jpg", ".png", ".webp"]
+    },
+    maxSize: 10 * 1024 * 1024,
+    multiple: true,
+    noClick: true,
+    disabled: isCompressing || isSubmitting,
+  })
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    await processAndAddImages(Array.from(files))
 
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
@@ -191,7 +184,6 @@ export function ManualAddCarForm({ onSuccess }: ManualAddCarFormProps) {
         reset()
         onSuccess?.()
         
-        // Redirect to cars page
         if (result.redirect) {
           router.push(result.redirect)
         }
@@ -207,7 +199,7 @@ export function ManualAddCarForm({ onSuccess }: ManualAddCarFormProps) {
   }
 
   return (
-    <Card>
+    <Card className='bg-gray-50 dark:bg-gray-900'>
       <CardHeader>
         <CardTitle>Manual Car Entry</CardTitle>
         <CardDescription>Enter all car details manually</CardDescription>
@@ -219,7 +211,7 @@ export function ManualAddCarForm({ onSuccess }: ManualAddCarFormProps) {
             register={register}
             errors={errors}
             setValue={setValue}
-            isSubmitting={isSubmitting}
+            isSubmitting={isSubmitting || isCompressing}
           />
 
           <div className="space-y-4 pt-6 border-t">
@@ -235,7 +227,7 @@ export function ManualAddCarForm({ onSuccess }: ManualAddCarFormProps) {
                   size="sm"
                   onClick={removeAllImages}
                   className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isCompressing}
                 >
                   <X className="mr-1 h-3 w-3" />
                   Remove All
@@ -274,7 +266,7 @@ export function ManualAddCarForm({ onSuccess }: ManualAddCarFormProps) {
                           type="button"
                           onClick={() => removeImage(index)}
                           className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                          disabled={isSubmitting}
+                          disabled={isSubmitting || isCompressing}
                         >
                           <X className="h-3 w-3" />
                         </button>
@@ -297,7 +289,7 @@ export function ManualAddCarForm({ onSuccess }: ManualAddCarFormProps) {
                 isDragActive
                   ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
                   : 'border-gray-300 dark:border-gray-600 hover:border-primary dark:hover:border-primary'
-              } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+              } ${isSubmitting || isCompressing ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <input 
                 type="file" 
@@ -306,12 +298,15 @@ export function ManualAddCarForm({ onSuccess }: ManualAddCarFormProps) {
                 accept="image/jpeg,image/jpg,image/png,image/webp"
                 className="hidden"
                 multiple
+                disabled={isCompressing || isSubmitting}
               />
               <input {...getInputProps()} />
               
               <Camera className="mx-auto mb-4 text-gray-400 dark:text-gray-500 size-12" />
               <p className="mb-2 text-gray-700 dark:text-gray-300 font-medium">
-                {isDragActive && !isDragReject
+                {isCompressing
+                  ? "Compressing images..."
+                  : isDragActive && !isDragReject
                   ? "Drop images here..."
                   : "Drag & drop car images here"
                 }
@@ -329,11 +324,20 @@ export function ManualAddCarForm({ onSuccess }: ManualAddCarFormProps) {
                 type="button"
                 variant="outline"
                 className="mt-2 disabled:opacity-50"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isCompressing}
                 onClick={triggerFileInput}
               >
-                <Upload className="mr-2 w-4 h-4" />
-                {isSubmitting ? 'Uploading...' : 'Browse Images'}
+                {isCompressing ? (
+                  <>
+                    <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                    Compressing...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="mr-2 w-4 h-4" />
+                    Browse Images
+                  </>
+                )}
               </Button>
             </div>
             
@@ -345,7 +349,7 @@ export function ManualAddCarForm({ onSuccess }: ManualAddCarFormProps) {
           <div className="flex justify-end pt-6 border-t">
             <Button 
               type="submit" 
-              disabled={isSubmitting || images.length === 0} 
+              disabled={isSubmitting || isCompressing || images.length === 0} 
               className="w-full sm:w-auto px-8"
             >
               {isSubmitting ? (
@@ -354,13 +358,13 @@ export function ManualAddCarForm({ onSuccess }: ManualAddCarFormProps) {
                   Adding Car...
                 </>
               ) : (
-                'Add Car to Inventory'
+                'Add Car to Inventory' 
               )}
             </Button>
           </div>
-        </form>
+        </form> 
       </CardContent>
     </Card>
-  )
+  ) 
 }
 
