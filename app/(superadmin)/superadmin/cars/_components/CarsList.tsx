@@ -6,58 +6,78 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { Plus, Search, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import React, { useState, useEffect, useCallback } from 'react'
-
+import React, { useState, useEffect } from 'react'
+ 
 const CarsList = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [search, setSearch] = useState(searchParams.get('q') || '')
-  const [isSearching, setIsSearching] = useState(false)
   
-  // Use debounce for search (optional but recommended)
+  // Use debounce for search
   const debouncedSearch = useDebounce(search, 500)
 
-  // Update URL when search changes
+  // Update URL when search changes - FIXED VERSION
   useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString())
+    const currentSearch = searchParams.get('q') || ''
+    const currentPage = searchParams.get('page') || '1'
     
-    if (debouncedSearch.trim()) {
-      params.set('q', debouncedSearch.trim())
-      params.set('page', '1') // Reset to first page on new search
-    } else {
-      params.delete('q')
+    // Only update if the search has actually changed
+    if (debouncedSearch.trim() !== currentSearch.trim()) {
+      const params = new URLSearchParams(searchParams.toString())
+      
+      if (debouncedSearch.trim()) {
+        params.set('q', debouncedSearch.trim())
+        params.set('page', '1') // Reset to first page on new search
+      } else {
+        params.delete('q')
+        // Only reset page if we're clearing search and not already on page 1
+        if (currentPage !== '1') {
+          params.set('page', '1')
+        }
+      }
+      
+      // Don't update if params haven't changed
+      const newParamsString = params.toString()
+      const currentParamsString = new URLSearchParams(searchParams.toString()).toString()
+      
+      if (newParamsString !== currentParamsString) {
+        router.push(`/superadmin/cars?${newParamsString}`, { scroll: false })
+      }
     }
-    
-    // Update URL without page reload
-    router.push(`/superadmin/cars?${params.toString()}`, { scroll: false })
-    setIsSearching(false)
-  }, [debouncedSearch, router, searchParams])
+  }, [debouncedSearch, router]) // REMOVED searchParams from dependencies to prevent infinite loop
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setIsSearching(true)
     
     const params = new URLSearchParams(searchParams.toString())
+    const currentSearch = params.get('q') || ''
     
-    if (search.trim()) {
-      params.set('q', search.trim())
-      params.set('page', '1')
-    } else {
-      params.delete('q')
+    // Only submit if search has changed
+    if (search.trim() !== currentSearch.trim()) {
+      if (search.trim()) {
+        params.set('q', search.trim())
+        params.set('page', '1')
+      } else {
+        params.delete('q')
+        params.set('page', '1')
+      }
+      
+      router.push(`/superadmin/cars?${params.toString()}`)
     }
-    
-    router.push(`/superadmin/cars?${params.toString()}`)
   }
 
   const handleClearSearch = () => {
-    setSearch('')
-    setIsSearching(true)
-    
     const params = new URLSearchParams(searchParams.toString())
-    params.delete('q')
-    params.delete('page')
+    const currentSearch = params.get('q')
     
-    router.push(`/superadmin/cars?${params.toString()}`)
+    // Only clear if there's actually a search
+    if (currentSearch) {
+      setSearch('')
+      params.delete('q')
+      params.set('page', '1')
+      
+      router.push(`/superadmin/cars?${params.toString()}`)
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -79,7 +99,6 @@ const CarsList = () => {
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={handleKeyDown}
               type='search'
-              disabled={isSearching}
             />
             
             {/* Clear search button */}
@@ -88,20 +107,11 @@ const CarsList = () => {
                 type="button"
                 onClick={handleClearSearch}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                disabled={isSearching}
               >
                 <X className="size-4" />
               </button>
             )}
-            
-            {/* Loading indicator */}
-            {isSearching && (
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-              </div>
-            )}
           </div>
-          
         </form>
 
         <Button asChild className="w-full sm:w-auto h-10">

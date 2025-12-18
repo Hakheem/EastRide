@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 import { CarStatus } from "@prisma/client";
 import { headers } from "next/headers";
 
-// Import SHARED utilities (from shared/car-utils)
+// Import SHARED utilities 
 import {
   priceRanges,
   formatPrice,
@@ -17,7 +17,7 @@ import {
   type CarData,
 } from "@/lib/shared/car-utils";
 
-// Import SERVER-ONLY utilities (from car-utils)
+// Import SERVER-ONLY utilities
 import {
   cleanPriceString,
   cleanMileageString,
@@ -27,7 +27,7 @@ import {
   deleteCarImages,
 } from "@/lib/car-utils";
 
-// Import SECURITY utilities
+// SECURITY utilities
 import { 
   validateCarListingContent, 
   checkForSpam,
@@ -35,7 +35,7 @@ import {
   recordIPViolation 
 } from "@/lib/security/shield-protection";
 
-// Ensure environment variables are loaded
+
 if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
   console.warn("⚠️ Cloudinary environment variables are not configured");
 }
@@ -44,7 +44,7 @@ if (!process.env.GEMINI_API_KEY) {
   console.warn("⚠️ Gemini API key is not configured");
 }
 
-// Helper to get IP address from headers
+//  get IP address from headers
 async function getClientIP(): Promise<string> {
   const headersList = await headers();
   return headersList.get("x-forwarded-for")?.split(",")[0].trim() || 
@@ -199,7 +199,9 @@ export async function processCarImageWithAI(file: File): Promise<AIResponse> {
 7. Fuel type (your best guess: Petrol, Diesel, Electric, Hybrid)
 8. Transmission type (Manual or Automatic, your best guess)
 9. Price estimate in KENYA SHILLINGS (based on current market trends in Kenya)
-10. A brief description of the car including its condition and any notable features.
+10. A brief description of the car including its condition and any notable features. Tailor it to fit the description of the car to be used in a car listing.
+
+where not sure for example fuel type if hybrid, do not write hybrid(likely) just write hybrid, or petrol or any other
 
 IMPORTANT: Provide price in KENYA SHILLINGS (KSH), not USD.
 
@@ -357,7 +359,7 @@ export async function addNewCar({ carData, images }: { carData: CarData, images:
       };
     }
 
-    if (carData.price > 100000000) {
+    if (carData.price > 10000000000) { 
       return {
         success: false,
         error: `Price (${formatPrice(carData.price)}) seems too high. Please verify. Maximum allowed: ${formatPrice(100000000)}`

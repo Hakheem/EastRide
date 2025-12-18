@@ -8,34 +8,41 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useState, useEffect, useCallback } from 'react'
 
-const CarsList = () => {
+const CarsList = () => { 
   const router = useRouter()
   const searchParams = useSearchParams()
   const [search, setSearch] = useState(searchParams.get('q') || '')
-  const [isSearching, setIsSearching] = useState(false)
   
-  // Use debounce for search (optional but recommended)
+  // Use debounce for search
   const debouncedSearch = useDebounce(search, 500)
 
-  // Update URL when search changes
+  // FIXED: Only update URL when debouncedSearch changes AND it's different from current param
   useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString())
+    const currentSearch = searchParams.get('q') || ''
     
-    if (debouncedSearch.trim()) {
-      params.set('q', debouncedSearch.trim())
-      params.set('page', '1') 
-    } else {
-      params.delete('q')
+    // Only update if the search has actually changed
+    if (debouncedSearch.trim() !== currentSearch.trim()) {
+      const params = new URLSearchParams(searchParams.toString())
+      
+      if (debouncedSearch.trim()) {
+        params.set('q', debouncedSearch.trim())
+        params.set('page', '1') 
+      } else {
+        params.delete('q')
+      }
+      
+      // Don't update if params haven't changed
+      const newParamsString = params.toString()
+      const currentParamsString = new URLSearchParams(searchParams.toString()).toString()
+      
+      if (newParamsString !== currentParamsString) {
+        router.push(`/admin/cars?${newParamsString}`, { scroll: false })
+      }
     }
-    
-    // Update URL without page reload
-    router.push(`/admin/cars?${params.toString()}`, { scroll: false })
-    setIsSearching(false)
-  }, [debouncedSearch, router, searchParams])
+  }, [debouncedSearch, router]) // REMOVED searchParams from dependencies
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setIsSearching(true)
     
     const params = new URLSearchParams(searchParams.toString())
     
@@ -51,11 +58,10 @@ const CarsList = () => {
 
   const handleClearSearch = () => {
     setSearch('')
-    setIsSearching(true)
     
     const params = new URLSearchParams(searchParams.toString())
     params.delete('q')
-    params.delete('page')
+    params.set('page', '1')
     
     router.push(`/admin/cars?${params.toString()}`)
   }
@@ -79,7 +85,6 @@ const CarsList = () => {
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={handleKeyDown}
               type='search'
-              disabled={isSearching}
             />
             
             {/* Clear search button */}
@@ -88,17 +93,9 @@ const CarsList = () => {
                 type="button"
                 onClick={handleClearSearch}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                disabled={isSearching}
               >
                 <X className="size-4" />
               </button>
-            )}
-            
-            {/* Loading indicator */}
-            {isSearching && (
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-              </div>
             )}
           </div>
           

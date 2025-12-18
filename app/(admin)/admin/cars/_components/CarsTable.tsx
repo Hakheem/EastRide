@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
     DropdownMenu,
-    DropdownMenuContent,
+    DropdownMenuContent, 
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
@@ -217,7 +217,6 @@ export default function CarsTable({ cars, pagination, searchParams }: CarsTableP
                                                         fill
                                                         className="object-cover"
                                                         sizes="48px"
-                                                        unoptimized
                                                     />
                                                 </div>
                                             ) : (

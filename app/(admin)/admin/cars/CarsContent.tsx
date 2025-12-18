@@ -106,7 +106,7 @@ export default function CarsContent() {
                     <p className="text-gray-500 dark:text-gray-400">
                         {params.q ? `No cars found for "${params.q}"` : 'No cars found'}
                     </p>
-                    {params.q && (
+                    {params.q && ( 
                         <p className="text-sm text-gray-400 mt-2">
                             Try searching with different keywords
                         </p>

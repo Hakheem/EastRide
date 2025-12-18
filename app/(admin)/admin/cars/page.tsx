@@ -8,7 +8,7 @@ import CarsPage from '@/components/general/CarsPage'
 
 // Main page component
 export default function AdminCarsPage() {
-    return (
+    return ( 
         <CarsPage
             title="Cars Inventory Management"
             description="Manage your car listings, update status, and mark featured vehicles"
