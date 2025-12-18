@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -76,6 +76,7 @@ export default function TestDriveBookingForm({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
   const [bookingDetails, setBookingDetails] = useState<any>(null)
+  const hasShownToast = useRef(false)
 
   const {
     register,
@@ -160,6 +161,7 @@ export default function TestDriveBookingForm({
     }
 
     setIsSubmitting(true)
+    hasShownToast.current = false
 
     try {
       const result = await bookTestDrive({
@@ -180,17 +182,23 @@ export default function TestDriveBookingForm({
           bookingId: result.data?.id
         })
         
-        // Show success toast
+        // Reset form first
+        reset()
+        
+        // Show success toast with longer duration
         toast.success('Test Drive Booked Successfully!', {
           description: 'Your test drive has been scheduled. Please check your email for confirmation.',
-          duration: 5000,
+          duration: 8000, // Increased to 8 seconds
         })
         
-        // Show success dialog
-        setShowSuccessDialog(true)
+        // Reset the toast flag
+        hasShownToast.current = true
         
-        // Reset form
-        reset()
+        // Show success dialog after a short delay to ensure toast is visible
+        setTimeout(() => {
+          setShowSuccessDialog(true)
+        }, 100) // Small delay to ensure state updates properly
+        
       } else if (result.requiresAuth) {
         toast.error('Please login to continue')
         router.push('/login')
@@ -271,7 +279,7 @@ export default function TestDriveBookingForm({
               <p className="text-sm text-red-500">{errors.startTime.message}</p>
             )}
           </div>
-
+ 
           <div className="space-y-2">
             <Label htmlFor="endTime">End Time *</Label>
             <Input
@@ -374,13 +382,15 @@ export default function TestDriveBookingForm({
         )}
       </form>
 
-      {/* Success Dialog */}
+      {/* Success Dialog  */}
       <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" onInteractOutside={(e) => {
+          e.preventDefault()
+        }}>
           <DialogHeader>
             <DialogTitle className="text-green-600 dark:text-green-400 flex items-center gap-2">
               <CheckCircle className="w-5 h-5" />
-              Test Drive Booked Successfully!
+              Test Drive Booked Successfully.
             </DialogTitle>
             <DialogDescription>
               Your test drive has been scheduled. Please check your email for confirmation.
@@ -423,7 +433,6 @@ export default function TestDriveBookingForm({
                 <ul className="space-y-1 text-blue-700 dark:text-blue-300">
                   <li>• Please arrive 10 minutes before your scheduled time</li>
                   <li>• Bring a valid driver's license (must be presented)</li>
-                  <li>• Your booking confirmation has been sent to your email</li>
                   <li>• Contact us if you need to reschedule or cancel</li>
                 </ul>
               </AlertDescription>
@@ -433,15 +442,24 @@ export default function TestDriveBookingForm({
           <DialogFooter className="flex flex-col sm:flex-row gap-2">
             <Button
               variant="outline"
-              onClick={() => setShowSuccessDialog(false)}
+              onClick={() => {
+                setShowSuccessDialog(false)
+                
+                setTimeout(() => {
+                  router.push(`/car/${carId}`)
+                }, 100)
+              }}
               className="flex-1"
             >
-              Close
+              Back to Car
             </Button>
             <Button
               onClick={() => {
                 setShowSuccessDialog(false)
-                router.push('/reservations')
+                // Small delay before navigation
+                setTimeout(() => {
+                  router.push('/reservations')
+                }, 100)
               }}
               className="flex-1"
             >

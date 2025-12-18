@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Calendar, Clock, Car, MapPin, X, Loader2, AlertCircle, CheckCircle, Clock4, User, Search, Filter, MoreVertical, Eye, Phone, Mail, CalendarCheck, CalendarX, Download } from 'lucide-react'
+import { Calendar, Clock, Car, MapPin, X, Loader2, AlertCircle, CheckCircle, Clock4, User, Search, Filter, MoreVertical, Eye, Phone, Mail, CalendarCheck, CalendarX, Download, ClockAlert, CalendarClock } from 'lucide-react'
 import { toast } from 'sonner'
 import { getAllTestDrives, updateBookingStatus } from '@/app/actions/test-drives'
 import { TestDriveBooking } from '@/types/test-drive'
@@ -34,7 +34,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
-import { format } from 'date-fns'
+import { format, isPast, isToday, parseISO } from 'date-fns'
 
 interface TestDriveManagementProps {
   title?: string
@@ -50,6 +50,7 @@ export default function TestDriveManagement({
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'ALL'>('ALL')
+  const [dateFilter, setDateFilter] = useState<'ALL' | 'UPCOMING' | 'PAST' | 'TODAY'>('ALL')
   const [selectedBooking, setSelectedBooking] = useState<TestDriveBooking | null>(null)
   const [showStatusDialog, setShowStatusDialog] = useState(false)
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
@@ -82,18 +83,53 @@ export default function TestDriveManagement({
     fetchBookings()
   }, [statusFilter])
 
-  // Filter bookings based on search term
+  // Helper function to check if booking date has passed
+  const isBookingDatePassed = (booking: TestDriveBooking): boolean => {
+    const bookingDate = new Date(booking.bookingDate)
+    // Add end time to the date to compare with current time
+    const [hours, minutes] = booking.endTime.split(':').map(Number)
+    bookingDate.setHours(hours, minutes, 0, 0)
+    return isPast(bookingDate)
+  }
+
+  // Helper function to check if booking is today
+  const isBookingToday = (booking: TestDriveBooking): boolean => {
+    const bookingDate = new Date(booking.bookingDate)
+    return isToday(bookingDate)
+  }
+
+  // Helper function to check if booking is upcoming
+  const isBookingUpcoming = (booking: TestDriveBooking): boolean => {
+    return !isBookingDatePassed(booking) && !isBookingToday(booking)
+  }
+
+  // Filter bookings based on search term and date filter
   const filteredBookings = bookings.filter(booking => {
-    if (!searchTerm) return true
-    
-    const searchLower = searchTerm.toLowerCase()
-    return (
-      booking.car?.make?.toLowerCase().includes(searchLower) ||
-      booking.car?.model?.toLowerCase().includes(searchLower) ||
-      booking.user?.name?.toLowerCase().includes(searchLower) ||
-      booking.user?.email?.toLowerCase().includes(searchLower) ||
-      booking.id.toLowerCase().includes(searchLower)
-    )
+    // Apply search filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase()
+      const matchesSearch = (
+        booking.car?.make?.toLowerCase().includes(searchLower) ||
+        booking.car?.model?.toLowerCase().includes(searchLower) ||
+        booking.user?.name?.toLowerCase().includes(searchLower) ||
+        booking.user?.email?.toLowerCase().includes(searchLower) ||
+        booking.id.toLowerCase().includes(searchLower)
+      )
+      if (!matchesSearch) return false
+    }
+
+    // Apply date filter
+    switch (dateFilter) {
+      case 'UPCOMING':
+        return isBookingUpcoming(booking)
+      case 'PAST':
+        return isBookingDatePassed(booking)
+      case 'TODAY':
+        return isBookingToday(booking)
+      case 'ALL':
+      default:
+        return true
+    }
   })
 
   const getStatusBadge = (status: BookingStatus) => {
@@ -128,8 +164,42 @@ export default function TestDriveManagement({
     }
   }
 
+  const getDateBadge = (booking: TestDriveBooking) => {
+    if (isBookingDatePassed(booking)) {
+      return (
+        <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-900/20 dark:text-gray-400 dark:border-gray-800">
+          <CalendarX className="w-3 h-3 mr-1" />
+          Past
+        </Badge>
+      )
+    } else if (isBookingToday(booking)) {
+      return (
+        <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800">
+          <CalendarClock className="w-3 h-3 mr-1" />
+          Today
+        </Badge>
+      )
+    } else {
+      return (
+        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
+          <CalendarCheck className="w-3 h-3 mr-1" />
+          Upcoming
+        </Badge>
+      )
+    }
+  }
+
   const handleStatusUpdate = async () => {
     if (!selectedBooking) return
+
+    // Validate status changes for past bookings
+    if (isBookingDatePassed(selectedBooking)) {
+      const allowedPastStatuses: BookingStatus[] = ['COMPLETED', 'NO_SHOW', 'CANCELLED']
+      if (!allowedPastStatuses.includes(selectedStatus)) {
+        toast.error('Past bookings can only be marked as Completed, No Show, or Cancelled')
+        return
+      }
+    }
 
     setUpdatingStatus(true)
     try {
@@ -180,8 +250,21 @@ export default function TestDriveManagement({
     return bookings.filter(b => b.status === status).length
   }
 
+  const getDateCount = (type: 'UPCOMING' | 'PAST' | 'TODAY') => {
+    switch (type) {
+      case 'UPCOMING':
+        return bookings.filter(b => isBookingUpcoming(b)).length
+      case 'PAST':
+        return bookings.filter(b => isBookingDatePassed(b)).length
+      case 'TODAY':
+        return bookings.filter(b => isBookingToday(b)).length
+      default:
+        return 0
+    }
+  }
+
   const exportToCSV = () => {
-    const headers = ['ID', 'Car', 'Customer', 'Email', 'Date', 'Time', 'Status', 'Notes']
+    const headers = ['ID', 'Car', 'Customer', 'Email', 'Date', 'Time', 'Status', 'Date Status', 'Notes']
     const csvData = filteredBookings.map(booking => [
       booking.id,
       `${booking.car?.year} ${booking.car?.make} ${booking.car?.model}`,
@@ -190,6 +273,7 @@ export default function TestDriveManagement({
       format(new Date(booking.bookingDate), 'yyyy-MM-dd'),
       `${booking.startTime} - ${booking.endTime}`,
       booking.status,
+      isBookingDatePassed(booking) ? 'PAST' : isBookingToday(booking) ? 'TODAY' : 'UPCOMING',
       booking.notes?.replace(/,/g, ';') || ''
     ])
     
@@ -226,7 +310,7 @@ export default function TestDriveManagement({
       </div>
     )
   }
-
+ 
   return (
     <div className="space-y-6 mb-8">
       {/* Header */}
@@ -261,25 +345,11 @@ export default function TestDriveManagement({
           <CardContent className="">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Pending</p>
-                <p className="text-2xl font-bold">{getStatusCount(BookingStatus.PENDING)}</p>
-              </div>
-              <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-full">
-                <Clock4 className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className='bg-gray-50 dark:bg-gray-900'>
-          <CardContent className="">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Confirmed</p>
-                <p className="text-2xl font-bold">{getStatusCount(BookingStatus.CONFIRMED)}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Upcoming</p>
+                <p className="text-2xl font-bold">{getDateCount('UPCOMING')}</p>
               </div>
               <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-full">
-                <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                <CalendarCheck className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
             </div>
           </CardContent>
@@ -289,11 +359,25 @@ export default function TestDriveManagement({
           <CardContent className="">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Completed</p>
-                <p className="text-2xl font-bold">{getStatusCount(BookingStatus.COMPLETED)}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Today</p>
+                <p className="text-2xl font-bold">{getDateCount('TODAY')}</p>
               </div>
-              <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-full">
-                <CalendarCheck className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              <div className="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-full">
+                <CalendarClock className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className='bg-gray-50 dark:bg-gray-900'>
+          <CardContent className="">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Past</p>
+                <p className="text-2xl font-bold">{getDateCount('PAST')}</p>
+              </div>
+              <div className="p-3 bg-gray-50 dark:bg-gray-900/20 rounded-full">
+                <CalendarX className="w-6 h-6 text-gray-600 dark:text-gray-400" />
               </div>
             </div>
           </CardContent>
@@ -301,41 +385,58 @@ export default function TestDriveManagement({
       </div>
 
       {/* Filters */}
-          <div className="flex flex-col md:flex-row gap-4 ">
-            <div className="flex-1">
-              <Label htmlFor="search" className="sr-only">Search</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  id="search"
-                  placeholder="Search by car, customer, email, or booking ID..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10  bg-gray-50 dark:bg-gray-900"
-                />
-              </div>
-            </div>
-            <div className="w-full md:w-48 ">
-              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as BookingStatus | 'ALL')}>
-                <SelectTrigger className='lg:h-full bg-gray-50 dark:bg-gray-900'>
-                  <Filter className="w-4 h-4 mr-2" />
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent className='bg-gray-50 dark:bg-gray-900'>
-                  <SelectItem value="ALL">All Statuses</SelectItem>
-                  <SelectItem value={BookingStatus.PENDING} className='cursor-pointer'>Pending</SelectItem>
-                  <SelectItem value={BookingStatus.CONFIRMED} className='cursor-pointer'>Confirmed</SelectItem>
-                  <SelectItem value={BookingStatus.COMPLETED} className='cursor-pointer'>Completed</SelectItem>
-                  <SelectItem value={BookingStatus.CANCELLED} className='cursor-pointer'>Cancelled</SelectItem>
-                  <SelectItem value={BookingStatus.NO_SHOW} className='cursor-pointer'>No Show</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Button onClick={fetchBookings} variant="outline" className=' bg-gray-50 dark:bg-gray-900'>
-              <Loader2 className="w-4 h-4 mr-2" />
-              Refresh
-            </Button>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <Label htmlFor="search" className="sr-only">Search</Label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              id="search"
+              placeholder="Search by car, customer, email, or booking ID..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 bg-gray-50 dark:bg-gray-900"
+            />
           </div>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-2">
+          <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as BookingStatus | 'ALL')}>
+            <SelectTrigger className="bg-gray-50 dark:bg-gray-900">
+              <Filter className="w-4 h-4 mr-2" />
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-50 dark:bg-gray-900">
+              <SelectItem value="ALL">All Statuses</SelectItem>
+              <SelectItem value={BookingStatus.PENDING} className="cursor-pointer">Pending</SelectItem>
+              <SelectItem value={BookingStatus.CONFIRMED} className="cursor-pointer">Confirmed</SelectItem>
+              <SelectItem value={BookingStatus.COMPLETED} className="cursor-pointer">Completed</SelectItem>
+              <SelectItem value={BookingStatus.CANCELLED} className="cursor-pointer">Cancelled</SelectItem>
+              <SelectItem value={BookingStatus.NO_SHOW} className="cursor-pointer">No Show</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={dateFilter} onValueChange={(value) => setDateFilter(value as any)}>
+            <SelectTrigger className="bg-gray-50 dark:bg-gray-900">
+              <Calendar className="w-4 h-4 mr-2" />
+              <SelectValue placeholder="Date" />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-50 dark:bg-gray-900">
+              <SelectItem value="ALL">All Dates</SelectItem>
+              <SelectItem value="UPCOMING">Upcoming</SelectItem>
+              <SelectItem value="TODAY">Today</SelectItem>
+              <SelectItem value="PAST">Past</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex gap-2">
+          <Button onClick={fetchBookings} variant="outline" className="flex-1 bg-gray-50 dark:bg-gray-900">
+            <Loader2 className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
+      </div>
 
       {/* Bookings List */}
       <div className="space-y-4">
@@ -343,15 +444,17 @@ export default function TestDriveManagement({
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              No bookings found{searchTerm ? ` for "${searchTerm}"` : ''}. {statusFilter !== 'ALL' ? `Try changing the status filter.` : ''}
+              No bookings found{searchTerm ? ` for "${searchTerm}"` : ''}. Try changing your filters.
             </AlertDescription>
           </Alert>
         ) : (
           filteredBookings.map((booking) => {
             const { dateTime } = formatDateTime(booking)
+            const isPastBooking = isBookingDatePassed(booking)
+            const isTodayBooking = isBookingToday(booking)
             
             return (
-              <Card key={booking.id} className="bg-gray-50 dark:bg-gray-900">
+              <Card key={booking.id} className={`bg-gray-50 dark:bg-gray-900 ${isPastBooking ? 'opacity-80' : ''}`}>
                 <CardContent className="">
                   <div className="flex flex-col lg:flex-row gap-6">
                     {/* Car Image */}
@@ -369,6 +472,11 @@ export default function TestDriveManagement({
                           <Car className="w-8 h-8 text-gray-400" />
                         </div>
                       )}
+                      {isPastBooking && (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                          <ClockAlert className="w-8 h-8 text-white" />
+                        </div>
+                      )}
                     </div>
 
                     {/* Booking Details */}
@@ -380,9 +488,10 @@ export default function TestDriveManagement({
                               {booking.car?.year} {booking.car?.make} {booking.car?.model}
                             </h3>
                             {getStatusBadge(booking.status)}
+                            {getDateBadge(booking)}
                           </div>
                           
-                          <div className="flex flex-col space-y-3 ">
+                          <div className="flex flex-col space-y-3">
                             <div>
                               <div className="flex items-center gap-2 text-sm mb-1">
                                 <Calendar className="w-3.5 h-3.5 text-gray-500" />
@@ -390,6 +499,12 @@ export default function TestDriveManagement({
                               </div>
                               <p className="text-gray-700 dark:text-gray-300 text-sm">
                                 {dateTime}
+                                {isPastBooking && (
+                                  <span className="ml-2 text-xs text-gray-500">(Passed)</span>
+                                )}
+                                {isTodayBooking && (
+                                  <span className="ml-2 text-xs text-orange-500">(Today)</span>
+                                )}
                               </p>
                             </div>
                             
@@ -428,32 +543,57 @@ export default function TestDriveManagement({
                           
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="outline" size="icon">
+                              <Button 
+                                variant="outline" 
+                                size="icon"
+                                disabled={isPastBooking && booking.status === 'CANCELLED'}
+                              >
                                 <MoreVertical className="w-4 h-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Update Status</DropdownMenuLabel>
+                              <DropdownMenuLabel>
+                                {isPastBooking ? 'Past Booking Actions' : 'Update Status'}
+                              </DropdownMenuLabel>
                               <DropdownMenuSeparator />
-                              {booking.status === 'PENDING' && (
-                                <DropdownMenuItem onClick={() => openStatusDialog(booking, BookingStatus.CONFIRMED)}>
-                                  <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
-                                  Confirm Booking
-                                </DropdownMenuItem>
-                              )}
-                              {booking.status === 'CONFIRMED' && (
+                              
+                              {/* Show appropriate status options based on date */}
+                              {!isPastBooking ? (
                                 <>
-                                  <DropdownMenuItem onClick={() => openStatusDialog(booking, BookingStatus.COMPLETED)}>
-                                    <CalendarCheck className="w-4 h-4 mr-2 text-blue-600" />
-                                    Mark as Completed
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => openStatusDialog(booking, BookingStatus.NO_SHOW)}>
-                                    <X className="w-4 h-4 mr-2 text-gray-600" />
-                                    Mark as No Show
-                                  </DropdownMenuItem>
+                                  {/* Options for upcoming/today bookings */}
+                                  {booking.status === 'PENDING' && (
+                                    <DropdownMenuItem onClick={() => openStatusDialog(booking, BookingStatus.CONFIRMED)}>
+                                      <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
+                                      Confirm Booking
+                                    </DropdownMenuItem>
+                                  )}
+                                  {booking.status === 'CONFIRMED' && (
+                                    <DropdownMenuItem onClick={() => openStatusDialog(booking, BookingStatus.COMPLETED)}>
+                                      <CalendarCheck className="w-4 h-4 mr-2 text-blue-600" />
+                                      Mark as Completed
+                                    </DropdownMenuItem>
+                                  )}
+                                </>
+                              ) : (
+                                <>
+                                  {/* Options for past bookings */}
+                                  {booking.status !== 'COMPLETED' && booking.status !== 'NO_SHOW' && booking.status !== 'CANCELLED' && (
+                                    <>
+                                      <DropdownMenuItem onClick={() => openStatusDialog(booking, BookingStatus.COMPLETED)}>
+                                        <CalendarCheck className="w-4 h-4 mr-2 text-blue-600" />
+                                        Mark as Completed
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => openStatusDialog(booking, BookingStatus.NO_SHOW)}>
+                                        <X className="w-4 h-4 mr-2 text-gray-600" />
+                                        Mark as No Show
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
                                 </>
                               )}
-                              {(booking.status === 'PENDING' || booking.status === 'CONFIRMED') && (
+                              
+                              {/* Cancellation option (available for most statuses except cancelled) */}
+                              {(booking.status !== 'CANCELLED' && booking.status !== 'COMPLETED' && booking.status !== 'NO_SHOW') && (
                                 <DropdownMenuItem 
                                   onClick={() => openStatusDialog(booking, BookingStatus.CANCELLED)}
                                   className="text-red-600"
@@ -462,6 +602,7 @@ export default function TestDriveManagement({
                                   Cancel Booking
                                 </DropdownMenuItem>
                               )}
+                              
                               <DropdownMenuSeparator />
                               <DropdownMenuItem onClick={() => router.push(`/car/${booking.carId}`)}>
                                 <Car className="w-4 h-4 mr-2" />
@@ -559,6 +700,7 @@ export default function TestDriveManagement({
                     <div>
                       <p className="text-sm text-gray-500 dark:text-gray-400">Date & Time</p>
                       <p className="font-medium">{formatDateTime(selectedBooking).dateTime}</p>
+                      <div className="mt-1">{getDateBadge(selectedBooking)}</div>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500 dark:text-gray-400">Status</p>
@@ -643,6 +785,9 @@ export default function TestDriveManagement({
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   {formatDateTime(selectedBooking).dateTime}
+                  {isBookingDatePassed(selectedBooking) && (
+                    <span className="ml-2 text-red-500">(Date has passed)</span>
+                  )}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Customer: {selectedBooking.user?.name || 'N/A'} ({selectedBooking.user?.email})
@@ -651,18 +796,43 @@ export default function TestDriveManagement({
 
               <div className="space-y-2">
                 <Label>New Status</Label>
-                <Select value={selectedStatus} onValueChange={(value) => setSelectedStatus(value as BookingStatus)}>
+                <Select 
+                  value={selectedStatus} 
+                  onValueChange={(value) => setSelectedStatus(value as BookingStatus)}
+                  disabled={isBookingDatePassed(selectedBooking) && selectedStatus === 'CONFIRMED'}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={BookingStatus.PENDING}>Pending</SelectItem>
-                    <SelectItem value={BookingStatus.CONFIRMED}>Confirmed</SelectItem>
-                    <SelectItem value={BookingStatus.COMPLETED}>Completed</SelectItem>
-                    <SelectItem value={BookingStatus.CANCELLED}>Cancelled</SelectItem>
-                    <SelectItem value={BookingStatus.NO_SHOW}>No Show</SelectItem>
+                    <SelectItem 
+                      value={BookingStatus.PENDING}
+                      disabled={isBookingDatePassed(selectedBooking)}
+                    >
+                      Pending {isBookingDatePassed(selectedBooking) && '(Not allowed for past bookings)'}
+                    </SelectItem>
+                    <SelectItem 
+                      value={BookingStatus.CONFIRMED}
+                      disabled={isBookingDatePassed(selectedBooking)}
+                    >
+                      Confirmed {isBookingDatePassed(selectedBooking) && '(Not allowed for past bookings)'}
+                    </SelectItem>
+                    <SelectItem value={BookingStatus.COMPLETED}>
+                      Completed
+                    </SelectItem>
+                    <SelectItem value={BookingStatus.CANCELLED}>
+                      Cancelled
+                    </SelectItem>
+                    <SelectItem value={BookingStatus.NO_SHOW}>
+                      No Show
+                    </SelectItem>
                   </SelectContent>
                 </Select>
+                {isBookingDatePassed(selectedBooking) && (
+                  <p className="text-sm text-yellow-600 dark:text-yellow-400">
+                    Note: Past bookings can only be marked as Completed, Cancelled, or No Show.
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">

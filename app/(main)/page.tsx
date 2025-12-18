@@ -12,7 +12,7 @@ import CTA from "@/components/general/CTA"
 export default function Home() {
   return (
     <div className=" ">
-     <HeroSection />
+     <HeroSection /> 
      <FeaturedCars/>
      <CarMakes />
      <LatestArrivals />

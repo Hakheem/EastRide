@@ -64,13 +64,30 @@ export async function middleware(req: NextRequest) {
   }
 
   // Get the JWT token for authentication
+  // CRITICAL: Match cookie configuration from auth.ts
+  const useSecureCookies = nextUrl.protocol === "https:";
+  const cookiePrefix = useSecureCookies ? "__Secure-" : "";
+  
   const token = await getToken({ 
     req, 
-    secret: process.env.NEXTAUTH_SECRET 
+    secret: process.env.NEXTAUTH_SECRET,
+    secureCookie: useSecureCookies,
+    cookieName: `${cookiePrefix}next-auth.session-token`,
   });
   
   const isLoggedIn = !!token;
   const userRole = token?.role as string | undefined;
+
+  // Debug logging
+  console.log("🔍 Middleware:", {
+    path: nextUrl.pathname,
+    protocol: nextUrl.protocol,
+    useSecureCookies,
+    cookieName: `${cookiePrefix}next-auth.session-token`,
+    hasToken: !!token,
+    isLoggedIn,
+    userRole,
+  });
 
   // Skip middleware for API routes (they handle their own auth)
   if (nextUrl.pathname.startsWith("/api")) {
@@ -81,6 +98,7 @@ export async function middleware(req: NextRequest) {
   // Handle /login page - redirect logged-in users to appropriate dashboard
   if (nextUrl.pathname === "/login") {
     if (isLoggedIn) { 
+      console.log("✅ User logged in at /login, redirecting based on role:", userRole);
       if (userRole === "SUPERADMIN") {
         return NextResponse.redirect(new URL("/superadmin/dashboard", nextUrl));
       } else if (userRole === "ADMIN") {
@@ -93,28 +111,19 @@ export async function middleware(req: NextRequest) {
     return applySecurityHeaders(response, req);
   }
 
-  // Redirect /admin to /admin/dashboard
-  if (nextUrl.pathname === "/admin" && isLoggedIn) {
-    if (userRole === "ADMIN" || userRole === "SUPERADMIN") {
-      return NextResponse.redirect(new URL("/admin/dashboard", nextUrl));
-    }
-  }
-
-  // Redirect /superadmin to /superadmin/dashboard
-  if (nextUrl.pathname === "/superadmin" && isLoggedIn) {
-    if (userRole === "SUPERADMIN") {
-      return NextResponse.redirect(new URL("/superadmin/dashboard", nextUrl));
-    }
-  }
-
   // Protect admin routes - redirect to login if not authenticated or not admin
   if (nextUrl.pathname.startsWith("/admin")) {
     if (!isLoggedIn) {
-      return NextResponse.redirect(new URL("/login", nextUrl));
+      console.log("❌ Not logged in, redirecting to /login");
+      const loginUrl = new URL("/login", nextUrl);
+      loginUrl.searchParams.set("callbackUrl", nextUrl.pathname);
+      return NextResponse.redirect(loginUrl);
     }
     if (userRole !== "ADMIN" && userRole !== "SUPERADMIN") {
+      console.log("❌ Not admin/superadmin, redirecting to /");
       return NextResponse.redirect(new URL("/", nextUrl));
     }
+    console.log("✅ Admin access granted");
     const response = NextResponse.next();
     return applySecurityHeaders(response, req);
   }
@@ -122,25 +131,45 @@ export async function middleware(req: NextRequest) {
   // Protect superadmin routes - redirect to login if not authenticated or not superadmin
   if (nextUrl.pathname.startsWith("/superadmin")) {
     if (!isLoggedIn) {
-      return NextResponse.redirect(new URL("/login", nextUrl));
+      console.log("❌ Not logged in, redirecting to /login");
+      const loginUrl = new URL("/login", nextUrl);
+      loginUrl.searchParams.set("callbackUrl", nextUrl.pathname);
+      return NextResponse.redirect(loginUrl);
     }
     if (userRole !== "SUPERADMIN") {
+      console.log("❌ Not superadmin, redirecting to /");
       return NextResponse.redirect(new URL("/", nextUrl));
     }
+    console.log("✅ Superadmin access granted");
     const response = NextResponse.next();
     return applySecurityHeaders(response, req);
+  }
+
+  // Redirect /admin to /admin/dashboard
+  if (nextUrl.pathname === "/admin") {
+    if (isLoggedIn && (userRole === "ADMIN" || userRole === "SUPERADMIN")) {
+      return NextResponse.redirect(new URL("/admin/dashboard", nextUrl));
+    }
+  }
+
+  // Redirect /superadmin to /superadmin/dashboard
+  if (nextUrl.pathname === "/superadmin") {
+    if (isLoggedIn && userRole === "SUPERADMIN") {
+      return NextResponse.redirect(new URL("/superadmin/dashboard", nextUrl));
+    } 
   }
 
   // Handle homepage "/" - redirect admins to their dashboards
   if (nextUrl.pathname === "/") {
     if (isLoggedIn) {
+      console.log("✅ Logged in user at /, role:", userRole);
       if (userRole === "SUPERADMIN") {
         return NextResponse.redirect(new URL("/superadmin/dashboard", nextUrl));
       } else if (userRole === "ADMIN") {
         return NextResponse.redirect(new URL("/admin/dashboard", nextUrl));
       }
     }
-  }
+  } 
 
   // All other routes - apply security headers
   const response = NextResponse.next();

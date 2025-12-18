@@ -11,14 +11,12 @@ interface HeroImageGalleryProps {
 
 const carImages = [
   '/gtr.png',
-  '/rr.png',
-  '/corvette.png',
-  '/mustang.png',
-  '/jeep_black.png',
-  '/bmw_blue.png',
+  '/suv_body.png',
+  '/mpv_body.png',
+  '/coupe_body.png',
 ]
 
-export default function HeroImageGallery({ intervalMinutes = 0.50 }: HeroImageGalleryProps) { 
+export default function HeroImageGallery({ intervalMinutes = 0.40 }: HeroImageGalleryProps) { 
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isMounted, setIsMounted] = useState(false)
 
@@ -43,7 +41,7 @@ export default function HeroImageGallery({ intervalMinutes = 0.50 }: HeroImageGa
     return (
       <div className="relative h-[300px] lg:max-h-[80vh] lg:h-full w-full overflow-hidden ">
         {/* Skeleton loader with car icon */}
-        <div className="h-full w-full flex flex-col items-center justify-center bg-linear-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 py-4">
+        <div className="h-full w-full flex flex-col items-center justify-center bg-transparent py-4">
           {/* Animated car icon */}
           <motion.div
             animate={{ 
@@ -85,7 +83,7 @@ export default function HeroImageGallery({ intervalMinutes = 0.50 }: HeroImageGa
             backgroundPosition: 'left center',
             backgroundSize: 'cover'
           }}
-        />
+        /> 
       </AnimatePresence>
     </div>
   )

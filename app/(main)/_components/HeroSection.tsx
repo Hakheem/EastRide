@@ -13,7 +13,7 @@ export default function HeroSection() {
       relative overflow-hidden
     ">
       {/* Additional linear overlay for depth */}
-      <div className="
+      <div className=" 
         absolute inset-0 
         bg-linear-to-br from-transparent via-transparent to-primary/5
         dark:bg-linear-to-br dark:from-transparent dark:via-transparent dark:to-gray-700/20
@@ -61,7 +61,7 @@ export default function HeroSection() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
-                className="mb-8 md:text-md  lg:max-w-[85%] text-gray-700 dark:text-gray-300"
+                className="mb-8 md:text-md  lg:max-w-[90%] text-gray-700 dark:text-gray-300"
               >
                 Browse through hundreds of verified cars from across 
                 East Africa. Advanced AI powered car search and test drive. Let's find the perfect vehicle that 
@@ -73,7 +73,7 @@ export default function HeroSection() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 }}
-                className="mb-4 md:max-w-[80%]  "
+                className="mb-4 md:max-w-[85%]  "
               >
                 <HomeSearch />
               </motion.div>

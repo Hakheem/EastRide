@@ -9,8 +9,8 @@ import { ObjectId } from "mongodb";
  * Body: { role: "user" | "admin" | "superadmin" }
  */
 export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { userId: string } }
+  request: NextRequest, 
+  { params }: { params: { userId: string } } 
 ) {
   try {
     const session = await auth();

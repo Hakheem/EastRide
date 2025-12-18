@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Sliders, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getCarListings } from "@/app/actions/car-listing";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface CarFiltersProps {
-  currentFilters: {
+  currentFilters: { 
     make?: string;
     bodyType?: string;
     transmission?: string;
@@ -37,6 +38,10 @@ export default function CarFilters({ currentFilters }: CarFiltersProps) {
     fuelTypes: [] as string[],
     priceRange: { min: 0, max: 10000000 },
   });
+
+  // Debounced price values for automatic filtering
+  const debouncedMinPrice = useDebounce(filters.minPrice, 5000);
+  const debouncedMaxPrice = useDebounce(filters.maxPrice, 5000);
 
   // Sync filters when URL changes
   useEffect(() => {
@@ -68,13 +73,59 @@ export default function CarFilters({ currentFilters }: CarFiltersProps) {
     fetchFilterOptions();
   }, []);
 
+  // Apply filters automatically when debounced prices change
+  useEffect(() => {
+    // Only apply if we have debounced values
+    if (debouncedMinPrice === undefined && debouncedMaxPrice === undefined) return;
+
+    // Create a new filters object with debounced prices
+    const newFilters = {
+      ...filters,
+      minPrice: debouncedMinPrice,
+      maxPrice: debouncedMaxPrice,
+    };
+
+    // Check if debounced values are different from current URL params
+    const currentMin = currentFilters.minPrice?.toString() || "";
+    const currentMax = currentFilters.maxPrice?.toString() || "";
+    const minChanged = debouncedMinPrice !== currentMin;
+    const maxChanged = debouncedMaxPrice !== currentMax;
+
+    // Only apply if there's a change AND at least one price has a value
+    const hasPriceValue = debouncedMinPrice !== "" || debouncedMaxPrice !== "";
+    const hasChanged = minChanged || maxChanged;
+
+    if (hasChanged && hasPriceValue) {
+      console.log("Auto-applying debounced price filters:", { 
+        debouncedMinPrice, 
+        debouncedMaxPrice,
+        currentMin,
+        currentMax,
+        minChanged,
+        maxChanged
+      });
+      applyFilters(newFilters, true);
+    }
+  }, [debouncedMinPrice, debouncedMaxPrice]);
+
   const handleFilterChange = (key: keyof typeof filters, value: string) => {
     console.log(`Filter changed: ${key} = ${value}`);
-    setFilters((prev) => ({ ...prev, [key]: value }));
+    const newFilters = { ...filters, [key]: value };
+    setFilters(newFilters);
+
+    // For non-price filters, apply immediately
+    if (key !== "minPrice" && key !== "maxPrice") {
+      applyFilters(newFilters);
+    }
+    // Price filters will be applied automatically after debounce
   };
 
-  const applyFilters = () => {
-    console.log("Applying filters:", filters);
+  const applyFilters = useCallback((filterState = filters, isAutoApply = false) => {
+    if (isAutoApply) {
+      console.log("Auto-applying filters after debounce:", filterState);
+    } else {
+      console.log("Manually applying filters:", filterState);
+    }
     
     // Create new params object
     const params = new URLSearchParams();
@@ -86,9 +137,12 @@ export default function CarFilters({ currentFilters }: CarFiltersProps) {
     }
     
     // Add non-empty filters
-    Object.entries(filters).forEach(([key, value]) => {
+    Object.entries(filterState).forEach(([key, value]) => {
       if (value && value.toString().trim() !== "") {
         params.set(key, value.toString());
+      } else {
+        // Remove empty filters
+        params.delete(key);
       }
     });
     
@@ -98,7 +152,7 @@ export default function CarFilters({ currentFilters }: CarFiltersProps) {
     const newUrl = `/cars?${params.toString()}`;
     console.log("Navigating to:", newUrl);
     router.push(newUrl);
-  };
+  }, [router, searchParams]);
 
   const clearFilters = () => {
     console.log("Clearing all filters");
@@ -146,30 +200,47 @@ export default function CarFilters({ currentFilters }: CarFiltersProps) {
       <div className="space-y-6">
         {/* Price Range */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 w-full ">
-            Price Range
-          </label>
+          <div className="flex justify-between items-center">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Price Range
+            </label>
+          
+          </div>
           <div className="grid grid-cols-2 gap-2 mt-2">
-            <input
-              type="number"
-              placeholder="Min"
-              value={filters.minPrice}
-              onChange={(e) => handleFilterChange("minPrice", e.target.value)}
-              className="w-full p-2 text-sm border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800"
-            />
-            <input
-              type="number"
-              placeholder="Max"
-              value={filters.maxPrice}
-              onChange={(e) => handleFilterChange("maxPrice", e.target.value)}
-              className="w-full p-2 text-sm border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800"
-            />
+            <div className="relative">
+              <input
+                type="number"
+                placeholder="Min"
+                value={filters.minPrice}
+                onChange={(e) => handleFilterChange("minPrice", e.target.value)}
+                className="w-full p-2 text-sm border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800"
+              />
+              {filters.minPrice !== "" && filters.minPrice !== (currentFilters.minPrice?.toString() || "") && (
+                <div className="absolute right-2 top-2">
+                  <div className="animate-pulse w-2 h-2 rounded-full bg-blue-500"></div>
+                </div>
+              )}
+            </div>
+            <div className="relative">
+              <input
+                type="number"
+                placeholder="Max"
+                value={filters.maxPrice}
+                onChange={(e) => handleFilterChange("maxPrice", e.target.value)}
+                className="w-full p-2 text-sm border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800"
+              />
+              {filters.maxPrice !== "" && filters.maxPrice !== (currentFilters.maxPrice?.toString() || "") && (
+                <div className="absolute right-2 top-2">
+                  <div className="animate-pulse w-2 h-2 rounded-full bg-blue-500"></div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Make */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 w-full ">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Make
           </label>
           <div className="flex flex-wrap gap-2 mt-2">
@@ -191,7 +262,7 @@ export default function CarFilters({ currentFilters }: CarFiltersProps) {
 
         {/* Body Type */}
         <div className="space-y-2">
-                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300 w-full ">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Body Type
           </label>
           <div className="flex flex-wrap gap-2 mt-2">
@@ -215,7 +286,7 @@ export default function CarFilters({ currentFilters }: CarFiltersProps) {
 
         {/* Transmission */}
         <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 w-full ">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Transmission
           </label>
           <div className="flex flex-wrap gap-2 mt-2">
@@ -239,7 +310,7 @@ export default function CarFilters({ currentFilters }: CarFiltersProps) {
 
         {/* Fuel Type */}
         <div className="space-y-2">
-                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300 w-full ">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Fuel Type
           </label>
           <div className="flex flex-wrap gap-2 mt-2">
@@ -262,8 +333,8 @@ export default function CarFilters({ currentFilters }: CarFiltersProps) {
         </div>
 
         {/* Apply Button */}
-        <Button onClick={applyFilters} className="w-full mt-6">
-          Apply Filters
+        <Button onClick={() => applyFilters(filters, false)} className="w-full mt-6">
+          Apply Filters Now
         </Button>
       </div>
     </div>

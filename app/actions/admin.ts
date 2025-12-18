@@ -19,7 +19,7 @@ export async function getAllUsers() {
       orderBy: { 
         createdAt: "desc",
       },
-    });
+    }); 
 
     return users;
   } catch (error) {

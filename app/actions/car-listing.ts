@@ -8,7 +8,7 @@ import { serializeCar } from "@/lib/shared/car-utils";
 
 type CarFilters = {
   make?: string;
-  bodyType?: string;
+  bodyType?: string; 
   transmission?: string;
   fuelType?: string;
   minPrice?: number;
@@ -205,9 +205,7 @@ export async function toggleSaveCar(carId: string) {
         },
       });
 
-      revalidatePath("/cars");
-      revalidatePath(`/cars/${carId}`);
-
+      // No revalidatePath - let client handle UI update
       return {
         success: true,
         saved: false,
@@ -222,9 +220,7 @@ export async function toggleSaveCar(carId: string) {
         },
       });
 
-      revalidatePath("/cars");
-      revalidatePath(`/cars/${carId}`);
-
+      // No revalidatePath - let client handle UI update
       return {
         success: true,
         saved: true,

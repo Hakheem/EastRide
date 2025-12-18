@@ -106,5 +106,5 @@ export async function isSuperAdmin() {
 export async function isAuthenticated() {
   const session = await auth();
   return !!session?.user;
-}
+} 
 

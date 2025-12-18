@@ -28,7 +28,7 @@ const Footer = () => {
                 />
               </div>
               <span className="text-2xl font-bold text-white">
-                East<span className="text-primary">Ride</span>
+                East<span className="text-gradient">Ride</span>
               </span>
             </Link>
             <p className="text-gray-400 mb-6 max-w-md">
@@ -36,16 +36,16 @@ const Footer = () => {
               Tanzania, Uganda, and Rwanda. Find your perfect ride with confidence.
             </p>
             <div className="flex gap-4 mb-8">
-              <a href="#" className="p-2 bg-gray-800 hover:bg-primary transition-colors rounded-full">
+              <a href="https://facebook.com/profile.php?id=10091358486942" className="p-2 bg-gray-800 hover:bg-primary transition-colors rounded-full">
                 <Facebook className="w-5 h-5" />
               </a>
-              <a href="#" className="p-2 bg-gray-800 hover:bg-primary transition-colors rounded-full">
+              <a href="https://x.com/eastride" className="p-2 bg-gray-800 hover:bg-primary transition-colors rounded-full">
                 <Twitter className="w-5 h-5" />
               </a>
-              <a href="#" className="p-2 bg-gray-800 hover:bg-primary transition-colors rounded-full">
+              <a href="https://instagram.com/hakheem.dev" className="p-2 bg-gray-800 hover:bg-primary transition-colors rounded-full">
                 <Instagram className="w-5 h-5" />
               </a>
-              <a href="#" className="p-2 bg-gray-800 hover:bg-primary transition-colors rounded-full">
+              <a href="https://youtube.com/hakheem" className="p-2 bg-gray-800 hover:bg-primary transition-colors rounded-full">
                 <Youtube className="w-5 h-5" />
               </a>
             </div>

@@ -4,10 +4,13 @@ import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 
+const useSecureCookies = process.env.NEXTAUTH_URL?.startsWith("https://") ?? false;
+const cookiePrefix = useSecureCookies ? "__Secure-" : "";
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers: [
-    GitHub({
+    GitHub({ 
       clientId: process.env.GITHUB_ID!,
       clientSecret: process.env.GITHUB_SECRET!,
     }),
@@ -18,7 +21,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   secret: process.env.NEXTAUTH_SECRET!,
   session: {
-    strategy: "jwt", // Important: Use JWT for Edge compatibility
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  // IMPORTANT: Explicit cookie configuration
+  cookies: {
+    sessionToken: {
+      name: `${cookiePrefix}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: useSecureCookies,
+        // Don't set domain - let it default to current domain
+      },
+    },
   },
   pages: {
     signIn: "/login",
@@ -26,7 +43,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   events: {
     async signIn({ user }) {
-      // Assign default "USER" role on first sign-in (UPPERCASE to match enum)
+      console.log("🔐 Sign in event triggered for:", user.email);
+      
       if (user && user.email) {
         const existingUser = await prisma.user.findUnique({
           where: { email: user.email },
@@ -37,38 +55,44 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             where: { email: user.email },
             data: { role: "USER" },
           });
+          console.log("✅ Assigned USER role to:", user.email);
         }
       }
     },
   },
   callbacks: {
     async redirect({ url, baseUrl }) {
-      // If the url is already an absolute URL (like after OAuth callback), 
-      // we need to determine where to redirect based on user role
+      console.log("🔄 Redirect callback:", { url, baseUrl });
       
-      // Parse the callback URL to check if it's coming from OAuth
+      // Handle OAuth callback
       if (url.startsWith(baseUrl)) {
-        // Extract any callback URL from the query params
         const urlObj = new URL(url);
         const callbackUrl = urlObj.searchParams.get('callbackUrl');
         
-        // If there's a specific callback URL, use it
         if (callbackUrl && callbackUrl !== '/login') {
+          console.log("✅ Using callback URL:", callbackUrl);
           return callbackUrl;
         }
       }
       
-      // For regular redirects (not OAuth), just use the URL if it's internal
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
-      if (url.startsWith(baseUrl)) return url;
+      // For internal redirects
+      if (url.startsWith("/")) {
+        console.log("✅ Internal redirect:", url);
+        return `${baseUrl}${url}`;
+      }
       
-      // Default to base URL (homepage)
+      if (url.startsWith(baseUrl)) {
+        console.log("✅ Base URL redirect:", url);
+        return url;
+      }
+      
+      console.log("✅ Default redirect to:", baseUrl);
       return baseUrl;
     },
     async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
-        // Fetch role from database on sign in
+        
         if (user.email) {
           const dbUser = await prisma.user.findUnique({
             where: { email: user.email },
@@ -76,10 +100,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           });
           token.role = dbUser?.role || "USER";
           token.id = dbUser?.id;
+          console.log("✅ JWT created with role:", token.role, "for:", user.email);
         }
       }
       
-      // Refresh role from database if session is updated
       if (trigger === "update" && token.email) {
         const dbUser = await prisma.user.findUnique({
           where: { email: token.email as string },
@@ -87,6 +111,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         });
         if (dbUser) {
           token.role = dbUser.role;
+          console.log("✅ JWT role refreshed:", token.role);
         }
       }
       
@@ -96,10 +121,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session?.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as "USER" | "ADMIN" | "SUPERADMIN";
+        console.log("✅ Session created with role:", session.user.role);
       }
       return session;
     },
-  },
+  }, 
 });
 
 // Export handlers for API routes
