@@ -122,10 +122,9 @@ const FeaturedCarsCard = ({ car }: FeaturedCarsCardProps) => {
             src={currentImage}
             alt={`${carName} - View ${activeImageIndex + 1}`}
             fill
-            className="object-contain block m-0 p-0"
+            className="object-contain md:object-cover block m-0 p-0"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             onError={(e) => {
-              // Fallback to placeholder if image fails to load
               const target = e.target as HTMLImageElement;
               target.src = "/placeholder.png";
             }}
