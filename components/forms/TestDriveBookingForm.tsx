@@ -154,64 +154,65 @@ export default function TestDriveBookingForm({
     return days[day] || day.charAt(0).toUpperCase() + day.slice(1)
   }
 
-  const onSubmit = async (data: TestDriveFormData) => {
-    if (isAlreadyBooked) {
-      router.push('/reservations')
-      return
-    }
-
-    setIsSubmitting(true)
-    hasShownToast.current = false
-
-    try {
-      const result = await bookTestDrive({
-        carId,
-        bookingDate: data.bookingDate,
-        startTime: data.startTime,
-        endTime: data.endTime,
-        notes: data.notes,
-      })
-
-      if (result.success) {
-        // Store booking details for success dialog
-        setBookingDetails({
-          car: result.data?.car || car,
-          date: data.bookingDate,
-          time: `${data.startTime} - ${data.endTime}`,
-          dealership: dealershipName,
-          bookingId: result.data?.id
-        })
-        
-        // Reset form first
-        reset()
-        
-        // Show success toast with longer duration
-        toast.success('Test Drive Booked Successfully!', {
-          description: 'Your test drive has been scheduled. Please check your email for confirmation.',
-          duration: 8000, // Increased to 8 seconds
-        })
-        
-        // Reset the toast flag
-        hasShownToast.current = true
-        
-        // Show success dialog after a short delay to ensure toast is visible
-        setTimeout(() => {
-          setShowSuccessDialog(true)
-        }, 100) // Small delay to ensure state updates properly
-        
-      } else if (result.requiresAuth) {
-        toast.error('Please login to continue')
-        router.push('/login')
-      } else {
-        toast.error(result.error || 'Failed to book test drive')
-      }
-    } catch (error) {
-      console.error('Booking error:', error)
-      toast.error('An unexpected error occurred')
-    } finally {
-      setIsSubmitting(false)
-    }
+ const onSubmit = async (data: TestDriveFormData) => {
+  if (isAlreadyBooked) {
+    router.push('/reservations')
+    return
   }
+
+  setIsSubmitting(true)
+  hasShownToast.current = false
+
+  try {
+    const result = await bookTestDrive({
+      carId,
+      bookingDate: data.bookingDate,
+      startTime: data.startTime,
+      endTime: data.endTime,
+      notes: data.notes,
+    })
+
+    if (result.success) {
+      // Store booking details for success dialog
+      setBookingDetails({
+        car: result.data?.car || car,
+        date: data.bookingDate,
+        time: `${data.startTime} - ${data.endTime}`,
+        dealership: dealershipName,
+        bookingId: result.data?.id
+      })
+      
+      // Reset form
+      reset()
+      
+      // Show success dialog FIRST
+      setShowSuccessDialog(true)
+      
+      // Show success toast AFTER dialog is open
+      // This prevents the toast from interfering with dialog state
+      setTimeout(() => {
+        if (!hasShownToast.current) {
+          toast.success('Test Drive Booked Successfully!', {
+            description: 'Your test drive has been scheduled. Please check your email for confirmation.',
+            duration: 8000,
+          })
+          hasShownToast.current = true
+        }
+      }, 200)
+      
+    } else if (result.requiresAuth) {
+      toast.error('Please login to continue')
+      router.push('/login')
+    } else {
+      toast.error(result.error || 'Failed to book test drive')
+    }
+  } catch (error) {
+    console.error('Booking error:', error)
+    toast.error('An unexpected error occurred')
+  } finally {
+    setIsSubmitting(false)
+  }
+}
 
   // Get minimum date (today)
   const today = new Date().toISOString().split('T')[0]
@@ -312,23 +313,23 @@ export default function TestDriveBookingForm({
           <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Important Information:</p>
           <div className="space-y-1.5 text-sm">
             <div className="flex items-start gap-2">
-              <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+              <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
               <span className="text-gray-600 dark:text-gray-400">Test drives are between 30 minutes and 1 hour</span>
             </div>
             <div className="flex items-start gap-2">
-              <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+              <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
               <span className="text-gray-600 dark:text-gray-400">Please arrive 10 minutes before your scheduled time</span>
             </div>
             <div className="flex items-start gap-2">
-              <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+              <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
               <span className="text-gray-600 dark:text-gray-400">Valid driver's license must be presented at arrival</span>
             </div>
             <div className="flex items-start gap-2">
-              <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+              <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
               <span className="text-gray-600 dark:text-gray-400">Maximum 2 bookings per hour slot</span>
             </div>
             <div className="flex items-start gap-2">
-              <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+              <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
               <span className="text-gray-600 dark:text-gray-400">Bookings are subject to confirmation via email</span>
             </div>
           </div>
@@ -445,7 +446,7 @@ export default function TestDriveBookingForm({
               onClick={() => {
                 setShowSuccessDialog(false)
                 
-                setTimeout(() => {
+                setTimeout(() => { 
                   router.push(`/car/${carId}`)
                 }, 100)
               }}

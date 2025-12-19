@@ -87,7 +87,7 @@ export default function CarImages({
               src={carImages[selectedImage].src}
               alt={carImages[selectedImage].alt}
               fill
-              className="object-cover"
+              className="object-contain lg:object-cover"
               sizes="(max-width: 768px) 100vw, 66vw"
               priority
               onError={(e) => {

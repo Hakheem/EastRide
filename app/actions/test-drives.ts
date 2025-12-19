@@ -69,7 +69,7 @@ async function isTimeSlotAvailable(
 
   return { available: true };
 }
-
+ 
 // Helper to check if time is within working hours
 async function isWithinWorkingHours(
   dayOfWeek: string,

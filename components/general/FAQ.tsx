@@ -13,7 +13,7 @@ export default function FAQ() {
         Frequently Asked Questions
       </h2>
 
-      <Accordion type="single" collapsible className="w-full max-w-4xl mx-auto">
+      <Accordion type="single" collapsible className="w-full max-w-4xl md:max-w-7xl mx-auto">
         {faqs.map((faq, index) => (
           <AccordionItem 
             key={index} 

@@ -12,12 +12,12 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         {/* Left Side - Hidden on ALL screens except desktop (xl) */}
         <div className="hidden xl:block relative overflow-hidden">
           {/* Background Image */}
-          <div className="absolute inset-0 bg-linear-to-br from-blue-400 to-blue-800">
+          <div className="absolute inset-0 bg-linear-to-br from-blue-400 to-blue-700">
             <div className="absolute inset-0 opacity-20 bg-[url('/gtr.png')] bg-cover bg-center"></div>
           </div>
           
           {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-linear-to-tl from-blue-500/80 via-transparent to-transparent"></div>
+          <div className="absolute inset-0 bg-linear-to-tl from-blue-400/80 via-transparent to-transparent"></div>
           
           {/* Content Overlay  */}
           <div className="relative h-full flex flex-col justify-end p-8">
@@ -30,7 +30,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
                       src="/logo.png" 
                       alt="EastRide Logo"
                       fill
-                      className="object-contain"
+                      className="object-cover"
                       sizes="32px"
                     />
                   </div>

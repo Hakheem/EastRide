@@ -129,7 +129,7 @@ const TestDrivePage = async ({ params }: PageProps) => {
                 src={car.images?.[0] || '/placeholder.jpg'}
                 alt={`${car.make} ${car.model}`}
                 fill
-                className="object-cover"
+                className="object-contain lg:object-cover"
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
             </div>
