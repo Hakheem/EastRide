@@ -29,7 +29,7 @@ const CarMakes = () => {
 
     const animate = () => {
       setScrollPosition(prev => {
-        const newPos = prev + 0.8 // Increased from 0.5 for faster scrolling
+        const newPos = prev + 0.6
         
         // Reset position when reaching the end
         if (newPos >= maxScroll) {

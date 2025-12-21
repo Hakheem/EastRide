@@ -77,7 +77,7 @@ export default function HeroSection() {
               >
                 <HomeSearch />
               </motion.div>
-            </motion.div>
+            </motion.div> 
           </div>
 
           {/* Image Gallery */}

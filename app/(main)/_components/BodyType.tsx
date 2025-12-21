@@ -43,7 +43,7 @@ const BodyType = () => {
               pauseOnMouseEnter: true
             }}
             spaceBetween={16}
-            slidesPerView={2}
+            slidesPerView={2} 
             breakpoints={{
               640: {
                 slidesPerView: 3,

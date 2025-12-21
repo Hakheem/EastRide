@@ -164,7 +164,6 @@ export async function toggleSaveCar(carId: string) {
     const userId = user.id;
     const userRole = (user as any)?.role;
 
-    // Don't allow admins/superadmins to save cars
     if (userRole === "ADMIN" || userRole === "SUPERADMIN") {
       return {
         success: false,
@@ -205,14 +204,12 @@ export async function toggleSaveCar(carId: string) {
         },
       });
 
-      // No revalidatePath - let client handle UI update
       return {
         success: true,
         saved: false,
         message: "Car removed from wishlist",
       };
     } else {
-      // Save
       await prisma.userSavedCar.create({
         data: {
           userId: userId,
@@ -220,7 +217,6 @@ export async function toggleSaveCar(carId: string) {
         },
       });
 
-      // No revalidatePath - let client handle UI update
       return {
         success: true,
         saved: true,

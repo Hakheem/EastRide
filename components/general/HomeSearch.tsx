@@ -11,7 +11,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Skeleton } from '@/components/ui/skeleton'
 import { processCarImageSearch } from "../../app/actions/home";
 
-
 const HomeSearch = () => {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -21,6 +20,13 @@ const HomeSearch = () => {
   const [searchImage, setSearchImage] = useState<File | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
+
+  // Helper to capitalize words properly
+  const capitalizeWords = (str: string) => {
+    return str.split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  }
 
   const handleTextSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,8 +38,35 @@ const HomeSearch = () => {
 
     setIsSearching(true)
 
-    setTimeout(() => {
-      router.push(`/cars?search=${encodeURIComponent(searchTerm.trim())}`)
+    const term = searchTerm.trim();
+    const normalized = term.toLowerCase();
+    
+    // Check common patterns and create appropriate URL
+    let url = '/cars?page=1';
+    
+    // Simple heuristics for common body types
+    if (normalized.includes('suv') || normalized === 'suv') {
+      url = `/cars?bodyType=SUV&page=1`;
+    } else if (normalized.includes('sedan') || normalized === 'sedan') {
+      url = `/cars?bodyType=Sedan&page=1`;
+    } else if (normalized.includes('coupe') || normalized === 'coupe') {
+      url = `/cars?bodyType=Coupe&page=1`;
+    } else if (normalized.includes('hatchback') || normalized === 'hatchback') {
+      url = `/cars?bodyType=Hatchback&page=1`;
+    } else if (normalized.includes('wagon') || normalized === 'wagon') {
+      url = `/cars?bodyType=Wagon&page=1`;
+    } else if (normalized.includes('convertible') || normalized === 'convertible') {
+      url = `/cars?bodyType=Convertible&page=1`;
+    } else if (normalized.includes('pickup') || normalized === 'pickup' || normalized.includes('truck')) {
+      url = `/cars?bodyType=Pickup&page=1`;
+    } else {
+      // Otherwise treat it as a make (brand name)
+      const capitalizedTerm = capitalizeWords(term);
+      url = `/cars?make=${encodeURIComponent(capitalizedTerm)}&page=1`;
+    }
+
+    setTimeout(() => { 
+      router.push(url)
       setIsSearching(false)
     }, 800)
   }
@@ -67,6 +100,7 @@ const handleImageSearch = async (e: React.FormEvent) => {
     }
 
     const params = new URLSearchParams();
+    params.set('page', '1');
 
     if (make) params.set("make", make);
     if (bodyType) params.set("bodyType", bodyType);
