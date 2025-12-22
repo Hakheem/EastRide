@@ -227,7 +227,7 @@ export default function EditCarForm({ car }: EditCarFormProps) {
             )
 
             if (result.success) {
-                toast.success('Car updated successfully!')
+                toast.success('Car updated successfully.')
                 router.push('/admin/cars')
                 router.refresh()
             } else {

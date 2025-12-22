@@ -69,7 +69,7 @@ export default function WorkingHoursManager({ dealershipId, initialHours }: Work
       const result = await updateAllWorkingHours(dealershipId, data.hours)
 
       if (result.success) {
-        toast.success('Working hours updated successfully!')
+        toast.success('Working hours updated successfully.')
       } else {
         toast.error(result.error || 'Failed to update working hours')
       }

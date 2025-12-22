@@ -65,7 +65,7 @@ export default function DealershipInfoManager({ initialData }: DealershipInfoMan
       result = await updateDealershipInfo(data)
 
       if (result.success) {
-        toast.success('Dealership information updated successfully!')
+        toast.success('Dealership information updated successfully.')
         router.refresh()
       } else {
         toast.error(result.error || 'Failed to update dealership information')

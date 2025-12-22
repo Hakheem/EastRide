@@ -58,7 +58,7 @@ export default function ContactForm() {
       const result = await submitContactForm(data)
       
       if (result.success) {
-        toast.success("Message sent successfully!")
+        toast.success("Message sent successfully.")
         setIsSuccess(true)
         reset()
         setTimeout(() => setIsSuccess(false), 5000)
@@ -79,7 +79,7 @@ export default function ContactForm() {
         <div className="mx-auto w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
           <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
         </div>
-        <h3 className="text-xl font-bold">Message Sent Successfully!</h3>
+        <h3 className="text-xl font-bold">Message Sent successfully.</h3>
         <p className="text-gray-600 dark:text-gray-400">
           Thank you for contacting us. We'll get back to you within 24 hours.
         </p>

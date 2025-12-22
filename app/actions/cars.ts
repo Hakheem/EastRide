@@ -489,7 +489,7 @@ export async function addNewCar({ carData, images }: { carData: CarData, images:
     return {
       success: true,
       data: car,
-      message: "Car added successfully!",
+      message: "Car added successfully.",
       redirect: "/admin/cars"
     };
 
@@ -810,7 +810,7 @@ export async function updateCar(
     return {
       success: true,
       data: updatedCar,
-      message: "Car updated successfully!"
+      message: "Car updated successfully."
     };
     
   } catch (error) {
@@ -861,7 +861,7 @@ export async function deleteCar(carId: string) {
     
     return {
       success: true,
-      message: "Car deleted successfully!"
+      message: "Car deleted successfully."
     };
     
   } catch (error) {

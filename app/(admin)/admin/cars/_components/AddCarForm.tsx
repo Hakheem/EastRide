@@ -56,7 +56,7 @@ const AddCarForm = () => {
   const [activeTab, setActiveTab] = useState('manual')
 
   const handleSuccess = () => {
-    toast.success('Car added successfully!')
+    toast.success('Car added successfully.')
     // You could redirect or refresh data here
   }
 

@@ -180,7 +180,7 @@ export function ManualAddCarForm({ onSuccess }: ManualAddCarFormProps) {
       })
 
       if (result.success) {
-        toast.success('Car added successfully!')
+        toast.success('Car added successfully.')
         reset()
         onSuccess?.()
         

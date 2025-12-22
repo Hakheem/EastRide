@@ -192,7 +192,7 @@ export default function TestDriveBookingForm({
       // This prevents the toast from interfering with dialog state
       setTimeout(() => {
         if (!hasShownToast.current) {
-          toast.success('Test Drive Booked Successfully!', {
+          toast.success('Test Drive Booked successfully.', {
             description: 'Your test drive has been scheduled. Please check your email for confirmation.',
             duration: 8000,
           })

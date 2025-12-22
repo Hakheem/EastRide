@@ -283,7 +283,7 @@ export async function bookTestDrive({
     return {
       success: true,
       data: booking,
-      message: "Test drive booked successfully! We will confirm your booking shortly.",
+      message: "Test drive booked successfully. We will confirm your booking shortly.",
     };
   } catch (error) {
     console.error("Error booking test drive:", error);
